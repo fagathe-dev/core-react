@@ -1,0 +1,160 @@
+import { describe, expect, it } from 'vitest';
+
+import * as compat from './compat';
+import * as editor from './editor';
+import * as icons from './icons';
+import * as core from './index';
+import * as theme from './theme';
+import * as ui from './ui';
+
+/**
+ * Surface publique : chaque symbole documenté doit être importable depuis son point d'entrée.
+ * (Évite la classe de bugs relevée dans core-ts : CookieHelper / DragNDrop non exportés.)
+ */
+const SURFACE: Record<string, [Record<string, unknown>, string[]]> = {
+  'core-react': [
+    core,
+    [
+      'useActionTimer',
+      'useClipboard',
+      'useCountdown',
+      'formatDuration',
+      'useDebouncedValue',
+      'useIsClient',
+      'useMarkdownEditor',
+      'useMediaQuery',
+      'getBreakpointQuery',
+      'usePageFocus',
+      'isPageFocused',
+      'useToggle',
+      'mergeRefs',
+      'UIProvider',
+      'useUI',
+      'useLinkProps',
+    ],
+  ],
+  'core-react/compat': [compat, ['withLegacyProps']],
+  'core-react/theme': [
+    theme,
+    [
+      'createAppTheme',
+      'createThemeStore',
+      'useTheme',
+      'initThemeStore',
+      'getThemeInitScript',
+      'ThemeScript',
+      'resolveMode',
+      'palettes',
+      'SLATE_SURFACES',
+      'TINTED_SURFACES',
+      'GATHER_ROLES',
+      'CMS_ROLES',
+      'LEGACY_RADII',
+    ],
+  ],
+  'core-react/icons': [icons, ['Icon', 'iconNames', 'DS_ICONS', 'DS_ICON_ALIASES', 'OUTLINE_COMPAT_ALIASES']],
+  'core-react/ui': [
+    ui,
+    [
+      'GlobalStyle',
+      'UIProvider',
+      'Avatar',
+      'Badge',
+      'Button',
+      'ButtonBase',
+      'Divider',
+      'Icon',
+      'IconButton',
+      'Link',
+      'SegmentedControl',
+      'Accordion',
+      'Card',
+      'EmptyState',
+      'ListGroup',
+      'MarkdownViewer',
+      'MarkdownContent',
+      'StatCard',
+      'Table',
+      'Carousel',
+      'Figure',
+      'Gallery',
+      'Image',
+      'Video',
+      'Alert',
+      'Drawer',
+      'Loading',
+      'Modal',
+      'ConfirmDialog',
+      'Progress',
+      'Skeleton',
+      'Toast',
+      'ToastContainer',
+      'useToast',
+      'Tooltip',
+      'Checkbox',
+      'FileDropzone',
+      'Input',
+      'InputGroup',
+      'MarkdownEditor',
+      'Radio',
+      'Select',
+      'TagInput',
+      'Textarea',
+      'TextField',
+      'Toggle',
+      'Col',
+      'Container',
+      'Flex',
+      'Grid',
+      'Row',
+      'BackButton',
+      'Breadcrumb',
+      'Dropdown',
+      'Navbar',
+      'Pagination',
+      'Sidebar',
+      'Tabs',
+      'ThemeModeSwitcher',
+      'Display',
+      'Lead',
+      'Text',
+      'Title',
+    ],
+  ],
+  'core-react/editor': [
+    editor,
+    [
+      'BlockCanvas',
+      'BlockList',
+      'BlockPicker',
+      'BlockWrapper',
+      'MediaSourceField',
+      'TextBlock',
+      'ImageBlock',
+      'VideoBlock',
+      'GalleryBlock',
+      'CarouselBlock',
+      'CodeBlock',
+      'QuoteBlock',
+      'TableBlock',
+      'FaqBlock',
+      'CtaBlock',
+      'CMS_BLOCK_REGISTRY',
+      'createBlockRegistry',
+      'extendBlockRegistry',
+      'defineBlock',
+      'useBlocksState',
+      'computeReadingTime',
+      'createBlockItemId',
+      'DEFAULT_CMS_BLOCKS',
+    ],
+  ],
+};
+
+describe('surface publique', () => {
+  for (const [entry, [module, names]] of Object.entries(SURFACE)) {
+    it.each(names)(`${entry} exporte %s`, (name) => {
+      expect(module[name]).toBeDefined();
+    });
+  }
+});

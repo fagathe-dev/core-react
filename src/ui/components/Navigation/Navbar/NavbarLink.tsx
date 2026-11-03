@@ -1,0 +1,51 @@
+import type { ClickableComponentProps } from '../../../types';
+import type { ComponentProps, ElementType } from 'react';
+import { useLinkProps } from 'core-react';
+import { styled, css } from 'styled-components';
+
+export interface NavbarLinkProps extends ClickableComponentProps {
+  $active?: boolean;
+  href?: string;
+}
+
+export const NavbarLinkBase = styled.button<NavbarLinkProps>`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[1.5]};
+  padding: ${({ theme }) => `${theme.spacing[1.5]} ${theme.spacing[3]}`};
+  font-family: inherit;
+  font-size: ${({ theme }) => theme.typography.sizes.sm};
+  font-weight: ${({ theme }) => theme.typography.weights.medium};
+  border: none;
+  background: transparent;
+  border-radius: ${({ theme }) => theme.radii.base};
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+
+  color: ${({ $active, theme }) => ($active ? theme.colors.primary.base : theme.colors.text.body)};
+
+  ${({ $active, theme }) =>
+    $active
+      ? css`
+          background-color: ${theme.colors.primary.subtle};
+        `
+      : css`
+          &:hover:not(:disabled) {
+            background-color: ${theme.colors.background.surfaceHover};
+            color: ${theme.colors.text.heading};
+          }
+        `}
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+/** Lien de barre de navigation : avec `href`, rendu par le composant de lien de `UIProvider`. */
+export const NavbarLink = ({ href, as, ...props }: ComponentProps<typeof NavbarLinkBase>) => (
+  <NavbarLinkBase {...props} {...useLinkProps(href, as as ElementType | undefined)} />
+);

@@ -1,0 +1,8 @@
+Les tracés de src/icons/generated/dsIcons.ts sont extraits de la police d'icônes du Design System
+(sf-p05-design-system, public/assets/ds-icons.css), qui embarque Material Design Icons 7.2.96.
+
+Material Design Icons — Pictogrammers (https://pictogrammers.com/library/mdi/)
+Icônes : Apache License 2.0 — https://www.apache.org/licenses/LICENSE-2.0
+Police : SIL Open Font License 1.1 — https://openfontlicense.org
+
+Les tracés sont régénérés par `npm run icons` (scripts/icons/generate.mjs) ; ne pas les modifier à la main.
