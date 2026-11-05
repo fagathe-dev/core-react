@@ -30,6 +30,7 @@ Les règles de développement (pour les humains et les agents) sont dans [SKILL.
 ```bash
 npm install
 npm test           # Vitest
+npm run storybook  # Vitrine du kit sur http://localhost:6006 (marques DS, Gather, CMS)
 npm run build      # dist/ est versionné : à relancer avant chaque commit qui touche src/
 ```
 

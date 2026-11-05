@@ -25,6 +25,7 @@ Références : [docs/README.md](docs/README.md) (index de la documentation) et [
 3. **Tester** à côté du fichier (`*.test.ts(x)`, `renderWithTheme` de `src/testing/`) ; ajouter le composant au test SSR (`src/ui/ssr.test.tsx`) s'il est rendu côté serveur ; ajouter les nouveaux exports au test de surface (`src/index.test.ts`).
 4. **Vérifier** : `npm run format && npm run lint && npm run typecheck && npm test && npm run build` (le hook pre-commit refait les quatre premiers).
 5. **Documenter** dans `docs/` (fichier existant de la famille, ou nouveau fichier lié depuis `docs/README.md`). **250 lignes maximum par fichier** : découper par bloc cohérent.
+   Et **montrer** le composant dans la story de sa famille (`stories/<Famille>.stories.tsx`, vitrine Storybook : `npm run storybook`). Les apps n'ont pas de Storybook.
 6. **Versionner `dist/`** : les apps installent core-react depuis git.
 
 ---

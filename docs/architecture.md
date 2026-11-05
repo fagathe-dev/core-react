@@ -19,6 +19,8 @@ src/
     blocks/                BlockWrapper, BlockPicker, *Block, MediaSourceField, blockDefaults
     registry.ts, useBlocksState.ts, BlockCanvas.tsx, BlockList.tsx, BlockViews.tsx, defaultRegistry.ts
   testing/renderWithTheme.tsx   utilitaire de test (non publié)
+stories/                   vitrine Storybook, une story par famille (non publiée)
+.storybook/                config Storybook : alias vers src/, sélecteur de marque et de thème
 scripts/icons/             générateur d'icônes (npm run icons) + icons.config.json
 docs/                      cette documentation
 ```
@@ -77,15 +79,17 @@ import { styled, css } from 'styled-components'; // et jamais `import styled fro
 5. Aucun accès à `window`/`document` pendant le rendu (effets et handlers seulement).
 6. Test à côté du composant (`*.test.tsx`, `renderWithTheme`) ; l'ajouter au test SSR (`src/ui/ssr.test.tsx`) s'il est utilisé côté serveur.
 7. Documenter dans `docs/components/<famille>.md` (250 lignes maximum par fichier).
+8. Le montrer dans la story de sa famille (`stories/<Famille>.stories.tsx`). Thème, marque et `UIProvider` sont fournis par `.storybook/preview.tsx` : ne pas les ajouter dans la story.
 
 ## Qualité
 
 | Script | Rôle |
 |---|---|
-| `npm run typecheck` | `tsc --noEmit` (strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`) |
+| `npm run typecheck` | `tsc --noEmit` (strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`), puis les stories (`tsconfig.storybook.json`) |
 | `npm run lint` | ESLint (typescript-eslint, react-hooks, `consistent-type-imports`) |
 | `npm run format` / `format:check` | Prettier (le fichier d'icônes généré est ignoré) |
 | `npm test` | Vitest + jsdom + Testing Library ; `ui/ssr.test.tsx` tourne en environnement Node |
 | `npm run icons` | Régénère les icônes depuis le Design System |
+| `npm run storybook` / `build-storybook` | Vitrine du kit (port 6006), avec le choix de la marque (DS, Gather, CMS) et du mode clair ou sombre |
 
 Le hook Husky `pre-commit` enchaîne `format:check`, `lint`, `typecheck` et `test`.
