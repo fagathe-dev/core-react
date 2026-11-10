@@ -143,6 +143,10 @@ __export(ui_exports, {
   SidebarSection: () => SidebarSection,
   SidebarToggle: () => SidebarToggle,
   Skeleton: () => Skeleton,
+  SkeletonCircle: () => SkeletonCircle,
+  SkeletonGroup: () => SkeletonGroup,
+  SkeletonLine: () => SkeletonLine,
+  SkeletonText: () => SkeletonText,
   StatCard: () => StatCard,
   TRow: () => TRow,
   TabContent: () => TabContent,
@@ -2150,35 +2154,135 @@ var Progress = ({ value, height = "6px", variant = "primary", ...rest }) => {
 };
 
 // src/ui/components/Feedback/Skeleton/Skeleton.tsx
+var import_styled_components50 = require("styled-components");
+
+// src/ui/components/Feedback/Skeleton/skeletonStyles.ts
 var import_styled_components49 = require("styled-components");
-var shimmer = import_styled_components49.keyframes`
-  0% { opacity: 1; }
-  50% { opacity: 0.4; }
-  100% { opacity: 1; }
+var toCssSize = (value) => typeof value === "number" ? `${value}px` : value;
+var shimmerMove = import_styled_components49.keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 `;
-var Skeleton = import_styled_components49.styled.div`
+var pulse = import_styled_components49.keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+`;
+var skeletonSurface = import_styled_components49.css`
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
   background-color: ${({ theme }) => theme.colors.background.surfaceActive};
-  animation: ${shimmer} 1.6s ease-in-out infinite;
 
-  width: ${({ $width }) => $width ? typeof $width === "number" ? `${$width}px` : $width : "100%"};
-  height: ${({ $height, $variant }) => {
-  if ($height) return typeof $height === "number" ? `${$height}px` : $height;
-  if ($variant === "text") return "1rem";
-  return "100%";
+  ${({ $animation = "shimmer" }) => $animation === "pulse" && import_styled_components49.css`
+      animation: ${pulse} 1.6s ease-in-out infinite;
+    `}
+
+  ${({ $animation = "shimmer", theme }) => $animation === "shimmer" && import_styled_components49.css`
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          color-mix(in srgb, ${theme.colors.primary.base} 10%, transparent) 40%,
+          color-mix(in srgb, ${theme.colors.background.surface} 60%, transparent) 50%,
+          color-mix(in srgb, ${theme.colors.primary.base} 10%, transparent) 60%,
+          transparent 100%
+        );
+        animation: ${shimmerMove} 1.8s ease-in-out infinite;
+      }
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+
+    &::after {
+      display: none;
+    }
+  }
+`;
+
+// src/ui/components/Feedback/Skeleton/Skeleton.tsx
+var import_jsx_runtime28 = require("react/jsx-runtime");
+var Skeleton = import_styled_components50.styled.div.attrs({ "aria-hidden": true })`
+  ${skeletonSurface}
+  display: block;
+  width: ${({ $width = "100%" }) => toCssSize($width)};
+  height: ${({ $height, $variant = "text" }) => {
+  if ($height !== void 0) return toCssSize($height);
+  return $variant === "text" ? "1rem" : "100%";
 }};
-
-  border-radius: ${({ $variant = "text", theme }) => {
+  border-radius: ${({ $radius, $variant = "text", theme }) => {
+  if ($radius !== void 0) return toCssSize($radius);
   if ($variant === "circular") return theme.radii.full;
+  if ($variant === "rounded") return theme.radii.xl;
   if ($variant === "text") return theme.radii.sm;
   return theme.radii.base;
 }};
 `;
+var SkeletonLine = import_styled_components50.styled.div.attrs({ "aria-hidden": true })`
+  ${skeletonSurface}
+  display: block;
+  width: ${({ $width = "100%" }) => toCssSize($width)};
+  height: ${({ $height = "0.75rem" }) => toCssSize($height)};
+  border-radius: ${({ theme }) => theme.radii.full};
+`;
+var SkeletonCircle = import_styled_components50.styled.div.attrs({ "aria-hidden": true })`
+  ${skeletonSurface}
+  display: block;
+  width: ${({ $size = 40 }) => toCssSize($size)};
+  height: ${({ $size = 40 }) => toCssSize($size)};
+  border-radius: ${({ theme }) => theme.radii.full};
+`;
+var TextStack = import_styled_components50.styled.div.attrs({ "aria-hidden": true })`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ $gap }) => toCssSize($gap)};
+  width: 100%;
+`;
+var SkeletonText = ({
+  lines = 3,
+  widths,
+  $lastLineWidth = "60%",
+  $lineHeight = "0.75rem",
+  $gap = "0.625rem",
+  $animation,
+  ...rest
+}) => {
+  const lineWidths = widths ?? Array.from(
+    { length: Math.max(1, lines) },
+    (_, index) => index === lines - 1 && lines > 1 ? $lastLineWidth : "100%"
+  );
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(TextStack, { $gap, ...rest, children: lineWidths.map((width, index) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(SkeletonLine, { $width: width, $height: $lineHeight, $animation }, index)) });
+};
+var VisuallyHidden = import_styled_components50.styled.span`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+`;
+var SkeletonGroup = ({
+  label = "Chargement\u2026",
+  children,
+  as: Component = "div",
+  ...rest
+}) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(Component, { role: "status", "aria-live": "polite", "aria-busy": "true", ...rest, children: [
+  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(VisuallyHidden, { children: label }),
+  children
+] });
 
 // src/ui/components/Feedback/Toast/Toast.tsx
 var import_icons8 = require("core-react/icons");
-var import_styled_components50 = require("styled-components");
-var import_jsx_runtime28 = require("react/jsx-runtime");
-var slideIn = import_styled_components50.keyframes`
+var import_styled_components51 = require("styled-components");
+var import_jsx_runtime29 = require("react/jsx-runtime");
+var slideIn = import_styled_components51.keyframes`
   from { opacity: 0; transform: translateX(100%); }
   to { opacity: 1; transform: translateX(0); }
 `;
@@ -2188,7 +2292,7 @@ var toastIcons = {
   warning: "alert",
   danger: "alert-circle"
 };
-var ToastWrapper = import_styled_components50.styled.div`
+var ToastWrapper = import_styled_components51.styled.div`
   display: flex;
   align-items: flex-start;
   gap: ${({ theme }) => theme.spacing[3]};
@@ -2205,7 +2309,7 @@ var ToastWrapper = import_styled_components50.styled.div`
 
   ${({ $variant, theme }) => {
   const role = theme.colors[$variant];
-  return import_styled_components50.css`
+  return import_styled_components51.css`
       border-left: 4px solid ${role.base};
       & > i {
         color: ${role.base};
@@ -2213,25 +2317,25 @@ var ToastWrapper = import_styled_components50.styled.div`
     `;
 }}
 `;
-var Content = import_styled_components50.styled.div`
+var Content = import_styled_components51.styled.div`
   flex: 1 1 auto;
   min-width: 0;
   color: ${({ theme }) => theme.colors.text.body};
 `;
-var ToastTitle = import_styled_components50.styled.strong`
+var ToastTitle = import_styled_components51.styled.strong`
   display: block;
   color: ${({ theme }) => theme.colors.text.heading};
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   margin-bottom: ${({ theme }) => theme.spacing[0.5]};
 `;
 var Toast = ({ variant = "info", title, onClose, children, ...rest }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(ToastWrapper, { $variant: variant, role: "status", ...rest, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_icons8.Icon, { name: toastIcons[variant], size: 20 }),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(Content, { children: [
-      title && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(ToastTitle, { children: title }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { children })
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(ToastWrapper, { $variant: variant, role: "status", ...rest, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_icons8.Icon, { name: toastIcons[variant], size: 20 }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Content, { children: [
+      title && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ToastTitle, { children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { children })
     ] }),
-    onClose && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    onClose && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
       IconButton,
       {
         name: "close",
@@ -2246,7 +2350,7 @@ var Toast = ({ variant = "info", title, onClose, children, ...rest }) => {
 
 // src/ui/components/Feedback/Toast/ToastContainer.tsx
 var import_react_dom3 = require("react-dom");
-var import_styled_components51 = require("styled-components");
+var import_styled_components52 = require("styled-components");
 
 // src/ui/components/Feedback/Toast/useToast.tsx
 var import_react14 = require("react");
@@ -2288,8 +2392,8 @@ var useToast = () => ({
 });
 
 // src/ui/components/Feedback/Toast/ToastContainer.tsx
-var import_jsx_runtime29 = require("react/jsx-runtime");
-var Viewport2 = import_styled_components51.styled.div`
+var import_jsx_runtime30 = require("react/jsx-runtime");
+var Viewport2 = import_styled_components52.styled.div`
   position: fixed;
   bottom: ${({ theme }) => theme.spacing[4]};
   right: ${({ theme }) => theme.spacing[4]};
@@ -2304,16 +2408,16 @@ var ToastContainer = () => {
   const removeToast2 = useToastStore((state2) => state2.removeToast);
   if (toasts.length === 0 || typeof document === "undefined") return null;
   return (0, import_react_dom3.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Viewport2, { "aria-live": "polite", children: toasts.map((t) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Toast, { variant: t.variant, title: t.title, onClose: () => removeToast2(t.id), children: t.message }, t.id)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Viewport2, { "aria-live": "polite", children: toasts.map((t) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Toast, { variant: t.variant, title: t.title, onClose: () => removeToast2(t.id), children: t.message }, t.id)) }),
     document.body
   );
 };
 
 // src/ui/components/Feedback/Tooltip/Tooltip.tsx
 var import_react15 = require("react");
-var import_styled_components52 = require("styled-components");
-var import_jsx_runtime30 = require("react/jsx-runtime");
-var Bubble = import_styled_components52.styled.span`
+var import_styled_components53 = require("styled-components");
+var import_jsx_runtime31 = require("react/jsx-runtime");
+var Bubble = import_styled_components53.styled.span`
   position: absolute;
   z-index: 1200;
   padding: ${({ theme }) => `${theme.spacing[1]} ${theme.spacing[2]}`};
@@ -2333,26 +2437,26 @@ var Bubble = import_styled_components52.styled.span`
   ${({ $placement }) => {
   switch ($placement) {
     case "bottom":
-      return import_styled_components52.css`
+      return import_styled_components53.css`
           top: calc(100% + 6px);
           left: 50%;
           transform: translateX(-50%) translateY(-4px);
         `;
     case "left":
-      return import_styled_components52.css`
+      return import_styled_components53.css`
           right: calc(100% + 6px);
           top: 50%;
           transform: translateY(-50%) translateX(4px);
         `;
     case "right":
-      return import_styled_components52.css`
+      return import_styled_components53.css`
           left: calc(100% + 6px);
           top: 50%;
           transform: translateY(-50%) translateX(-4px);
         `;
     case "top":
     default:
-      return import_styled_components52.css`
+      return import_styled_components53.css`
           bottom: calc(100% + 6px);
           left: 50%;
           transform: translateX(-50%) translateY(4px);
@@ -2360,7 +2464,7 @@ var Bubble = import_styled_components52.styled.span`
   }
 }}
 `;
-var Wrapper = import_styled_components52.styled.span`
+var Wrapper = import_styled_components53.styled.span`
   position: relative;
   display: inline-flex;
 
@@ -2370,15 +2474,15 @@ var Wrapper = import_styled_components52.styled.span`
   }
 `;
 var Tooltip = ({ content, placement = "top", children, ...rest }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(Wrapper, { ...rest, children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(Wrapper, { ...rest, children: [
     children,
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Bubble, { $placement: placement, role: "tooltip", children: content })
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Bubble, { $placement: placement, role: "tooltip", children: content })
   ] });
 };
 
 // src/ui/components/Forms/Checkbox.tsx
-var import_styled_components53 = require("styled-components");
-var Checkbox = import_styled_components53.styled.input.attrs({ type: "checkbox" })`
+var import_styled_components54 = require("styled-components");
+var Checkbox = import_styled_components54.styled.input.attrs({ type: "checkbox" })`
   appearance: none;
   width: 1.125rem;
   height: 1.125rem;
@@ -2424,11 +2528,11 @@ var Checkbox = import_styled_components53.styled.input.attrs({ type: "checkbox" 
 
 // src/ui/components/Forms/Fields/CheckField.tsx
 var import_react16 = require("react");
-var import_styled_components56 = require("styled-components");
+var import_styled_components57 = require("styled-components");
 
 // src/ui/components/Forms/HelperText.tsx
-var import_styled_components54 = require("styled-components");
-var HelperText = import_styled_components54.styled.span`
+var import_styled_components55 = require("styled-components");
+var HelperText = import_styled_components55.styled.span`
   display: block;
   font-size: ${({ theme }) => theme.typography.sizes.xs};
   margin-top: ${({ theme }) => theme.spacing[1]};
@@ -2445,8 +2549,8 @@ var HelperText = import_styled_components54.styled.span`
 `;
 
 // src/ui/components/Forms/Radio.tsx
-var import_styled_components55 = require("styled-components");
-var Radio = import_styled_components55.styled.input.attrs({ type: "radio" })`
+var import_styled_components56 = require("styled-components");
+var Radio = import_styled_components56.styled.input.attrs({ type: "radio" })`
   appearance: none;
   width: 1.125rem;
   height: 1.125rem;
@@ -2490,8 +2594,8 @@ var Radio = import_styled_components55.styled.input.attrs({ type: "radio" })`
 `;
 
 // src/ui/components/Forms/Fields/CheckField.tsx
-var import_jsx_runtime31 = require("react/jsx-runtime");
-var LabelContainer = import_styled_components56.styled.label`
+var import_jsx_runtime32 = require("react/jsx-runtime");
+var LabelContainer = import_styled_components57.styled.label`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
@@ -2500,7 +2604,7 @@ var LabelContainer = import_styled_components56.styled.label`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   color: ${({ theme }) => theme.colors.text.body};
 `;
-var FieldWrapper = import_styled_components56.styled.div`
+var FieldWrapper = import_styled_components57.styled.div`
   margin-bottom: ${({ theme }) => theme.spacing[2]};
 `;
 var CheckField = (0, import_react16.forwardRef)(
@@ -2508,12 +2612,12 @@ var CheckField = (0, import_react16.forwardRef)(
     const generatedId = (0, import_react16.useId)();
     const id = customId || generatedId;
     const InputComponent = type === "radio" ? Radio : Checkbox;
-    return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(FieldWrapper, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(LabelContainer, { htmlFor: id, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(InputComponent, { ref, id, ...inputProps }),
-        label && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: label })
+    return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(FieldWrapper, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(LabelContainer, { htmlFor: id, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(InputComponent, { ref, id, ...inputProps }),
+        label && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { children: label })
       ] }),
-      error && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(HelperText, { $state: "invalid", children: error })
+      error && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(HelperText, { $state: "invalid", children: error })
     ] });
   }
 );
@@ -2521,11 +2625,11 @@ CheckField.displayName = "CheckField";
 
 // src/ui/components/Forms/Fields/ChoiceField.tsx
 var import_react17 = require("react");
-var import_styled_components59 = require("styled-components");
+var import_styled_components60 = require("styled-components");
 
 // src/ui/components/Forms/Label.tsx
-var import_styled_components57 = require("styled-components");
-var Label = import_styled_components57.styled.label`
+var import_styled_components58 = require("styled-components");
+var Label = import_styled_components58.styled.label`
   display: inline-block;
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   font-weight: ${({ theme }) => theme.typography.weights.medium};
@@ -2542,8 +2646,8 @@ var Label = import_styled_components57.styled.label`
 `;
 
 // src/ui/components/Forms/Select.tsx
-var import_styled_components58 = require("styled-components");
-var Select = import_styled_components58.styled.select`
+var import_styled_components59 = require("styled-components");
+var Select = import_styled_components59.styled.select`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
   padding-right: ${({ theme }) => theme.spacing[6]};
@@ -2579,8 +2683,8 @@ var Select = import_styled_components58.styled.select`
 `;
 
 // src/ui/components/Forms/Fields/ChoiceField.tsx
-var import_jsx_runtime32 = require("react/jsx-runtime");
-var FieldWrapper2 = import_styled_components59.styled.div`
+var import_jsx_runtime33 = require("react/jsx-runtime");
+var FieldWrapper2 = import_styled_components60.styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: ${({ theme }) => theme.spacing[3]};
@@ -2590,11 +2694,11 @@ var ChoiceField = (0, import_react17.forwardRef)(
     const generatedId = (0, import_react17.useId)();
     const id = customId || generatedId;
     const validationState = error ? "invalid" : selectProps.$validationState;
-    return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(FieldWrapper2, { children: [
-      label && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Label, { htmlFor: id, $required: required, children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Select, { ref, id, required, $validationState: validationState, ...selectProps, children }),
-      error && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(HelperText, { $state: "invalid", children: error }),
-      !error && hint && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(HelperText, { children: hint })
+    return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(FieldWrapper2, { children: [
+      label && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(Select, { ref, id, required, $validationState: validationState, ...selectProps, children }),
+      error && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(HelperText, { $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(HelperText, { children: hint })
     ] });
   }
 );
@@ -2602,11 +2706,11 @@ ChoiceField.displayName = "ChoiceField";
 
 // src/ui/components/Forms/Fields/TextareaField.tsx
 var import_react18 = require("react");
-var import_styled_components61 = require("styled-components");
+var import_styled_components62 = require("styled-components");
 
 // src/ui/components/Forms/Textarea.tsx
-var import_styled_components60 = require("styled-components");
-var Textarea = import_styled_components60.styled.textarea`
+var import_styled_components61 = require("styled-components");
+var Textarea = import_styled_components61.styled.textarea`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
   font-size: ${({ theme }) => theme.typography.sizes.base};
@@ -2651,8 +2755,8 @@ var Textarea = import_styled_components60.styled.textarea`
 `;
 
 // src/ui/components/Forms/Fields/TextareaField.tsx
-var import_jsx_runtime33 = require("react/jsx-runtime");
-var FieldWrapper3 = import_styled_components61.styled.div`
+var import_jsx_runtime34 = require("react/jsx-runtime");
+var FieldWrapper3 = import_styled_components62.styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: ${({ theme }) => theme.spacing[3]};
@@ -2662,9 +2766,9 @@ var TextareaField = (0, import_react18.forwardRef)(
     const generatedId = (0, import_react18.useId)();
     const id = customId || generatedId;
     const validationState = error ? "invalid" : textareaProps.$validationState;
-    return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(FieldWrapper3, { children: [
-      label && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(Label, { htmlFor: id, $required: required, children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(FieldWrapper3, { children: [
+      label && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
         Textarea,
         {
           ref,
@@ -2675,8 +2779,8 @@ var TextareaField = (0, import_react18.forwardRef)(
           ...textareaProps
         }
       ),
-      error && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(HelperText, { $state: "invalid", children: error }),
-      !error && hint && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(HelperText, { children: hint })
+      error && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(HelperText, { $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(HelperText, { children: hint })
     ] });
   }
 );
@@ -2684,11 +2788,11 @@ TextareaField.displayName = "TextareaField";
 
 // src/ui/components/Forms/Fields/TextField.tsx
 var import_react19 = require("react");
-var import_styled_components63 = require("styled-components");
+var import_styled_components64 = require("styled-components");
 
 // src/ui/components/Forms/Input.tsx
-var import_styled_components62 = require("styled-components");
-var Input = import_styled_components62.styled.input`
+var import_styled_components63 = require("styled-components");
+var Input = import_styled_components63.styled.input`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
   font-size: ${({ theme }) => theme.typography.sizes.base};
@@ -2734,8 +2838,8 @@ var Input = import_styled_components62.styled.input`
 `;
 
 // src/ui/components/Forms/Fields/TextField.tsx
-var import_jsx_runtime34 = require("react/jsx-runtime");
-var FieldWrapper4 = import_styled_components63.styled.div`
+var import_jsx_runtime35 = require("react/jsx-runtime");
+var FieldWrapper4 = import_styled_components64.styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: ${({ theme }) => theme.spacing[3]};
@@ -2745,11 +2849,11 @@ var TextField = (0, import_react19.forwardRef)(
     const generatedId = (0, import_react19.useId)();
     const id = customId || generatedId;
     const validationState = error ? "invalid" : inputProps.$validationState;
-    return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(FieldWrapper4, { children: [
-      label && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Label, { htmlFor: id, $required: required, children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Input, { ref, id, required, $validationState: validationState, ...inputProps }),
-      error && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(HelperText, { $state: "invalid", children: error }),
-      !error && hint && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(HelperText, { children: hint })
+    return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(FieldWrapper4, { children: [
+      label && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Input, { ref, id, required, $validationState: validationState, ...inputProps }),
+      error && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(HelperText, { $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(HelperText, { children: hint })
     ] });
   }
 );
@@ -2757,11 +2861,11 @@ TextField.displayName = "TextField";
 
 // src/ui/components/Forms/Fields/ToggleField.tsx
 var import_react20 = require("react");
-var import_styled_components65 = require("styled-components");
+var import_styled_components66 = require("styled-components");
 
 // src/ui/components/Forms/Toggle.tsx
-var import_styled_components64 = require("styled-components");
-var Toggle = import_styled_components64.styled.input.attrs((props) => ({
+var import_styled_components65 = require("styled-components");
+var Toggle = import_styled_components65.styled.input.attrs((props) => ({
   type: props.type || "checkbox"
 }))`
   appearance: none;
@@ -2809,8 +2913,8 @@ var Toggle = import_styled_components64.styled.input.attrs((props) => ({
 `;
 
 // src/ui/components/Forms/Fields/ToggleField.tsx
-var import_jsx_runtime35 = require("react/jsx-runtime");
-var LabelContainer2 = import_styled_components65.styled.label`
+var import_jsx_runtime36 = require("react/jsx-runtime");
+var LabelContainer2 = import_styled_components66.styled.label`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[3]};
@@ -2819,19 +2923,19 @@ var LabelContainer2 = import_styled_components65.styled.label`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   color: ${({ theme }) => theme.colors.text.body};
 `;
-var FieldWrapper5 = import_styled_components65.styled.div`
+var FieldWrapper5 = import_styled_components66.styled.div`
   margin-bottom: ${({ theme }) => theme.spacing[2]};
 `;
 var ToggleField = (0, import_react20.forwardRef)(
   ({ label, error, id: customId, ...toggleProps }, ref) => {
     const generatedId = (0, import_react20.useId)();
     const id = customId || generatedId;
-    return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(FieldWrapper5, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(LabelContainer2, { htmlFor: id, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Toggle, { ref, id, ...toggleProps }),
-        label && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { children: label })
+    return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(FieldWrapper5, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(LabelContainer2, { htmlFor: id, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Toggle, { ref, id, ...toggleProps }),
+        label && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { children: label })
       ] }),
-      error && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(HelperText, { $state: "invalid", children: error })
+      error && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(HelperText, { $state: "invalid", children: error })
     ] });
   }
 );
@@ -2840,9 +2944,9 @@ ToggleField.displayName = "ToggleField";
 // src/ui/components/Forms/FileDropzone/FileDropzone.tsx
 var import_icons9 = require("core-react/icons");
 var import_react21 = require("react");
-var import_styled_components66 = require("styled-components");
-var import_jsx_runtime36 = require("react/jsx-runtime");
-var DropArea = import_styled_components66.styled.div`
+var import_styled_components67 = require("styled-components");
+var import_jsx_runtime37 = require("react/jsx-runtime");
+var DropArea = import_styled_components67.styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2861,26 +2965,26 @@ var DropArea = import_styled_components66.styled.div`
   cursor: ${({ $disabled }) => $disabled ? "not-allowed" : "pointer"};
   transition: all 0.15s ease;
 
-  ${({ $disabled, theme }) => !$disabled && import_styled_components66.css`
+  ${({ $disabled, theme }) => !$disabled && import_styled_components67.css`
       &:hover {
         border-color: ${theme.colors.primary.base};
         background-color: ${theme.colors.background.surfaceHover};
       }
     `}
 
-  ${({ $disabled }) => $disabled && import_styled_components66.css`
+  ${({ $disabled }) => $disabled && import_styled_components67.css`
       opacity: 0.6;
     `}
 `;
-var HiddenInput = import_styled_components66.styled.input`
+var HiddenInput = import_styled_components67.styled.input`
   display: none;
 `;
-var MainText = import_styled_components66.styled.span`
+var MainText = import_styled_components67.styled.span`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   font-weight: ${({ theme }) => theme.typography.weights.medium};
   color: ${({ theme }) => theme.colors.text.heading};
 `;
-var SubText = import_styled_components66.styled.span`
+var SubText = import_styled_components67.styled.span`
   font-size: ${({ theme }) => theme.typography.sizes.xs};
   color: ${({ theme }) => theme.colors.text.muted};
 `;
@@ -2915,9 +3019,9 @@ var FileDropzone = ({
     }
   };
   const displayedError = error || localError;
-  return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { ...rest, children: [
-    label && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Label, { children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { ...rest, children: [
+    label && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Label, { children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(
       DropArea,
       {
         $isDragging: isDragging,
@@ -2935,7 +3039,7 @@ var FileDropzone = ({
           handleFiles(e.dataTransfer.files);
         },
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
             HiddenInput,
             {
               ref: inputRef,
@@ -2950,9 +3054,9 @@ var FileDropzone = ({
               }
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(import_icons9.Icon, { name: "cloud-upload-outline", size: 32 }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(MainText, { children: "Glissez-d\xE9posez vos fichiers ici ou cliquez pour parcourir" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(SubText, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_icons9.Icon, { name: "cloud-upload-outline", size: 32 }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(MainText, { children: "Glissez-d\xE9posez vos fichiers ici ou cliquez pour parcourir" }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(SubText, { children: [
             "Taille maximale : ",
             maxSizeMb,
             " Mo"
@@ -2960,16 +3064,16 @@ var FileDropzone = ({
         ]
       }
     ),
-    displayedError && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(HelperText, { $state: "invalid", children: displayedError }),
-    !displayedError && hint && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(HelperText, { children: hint })
+    displayedError && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(HelperText, { $state: "invalid", children: displayedError }),
+    !displayedError && hint && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(HelperText, { children: hint })
   ] });
 };
 
 // src/ui/components/Forms/InputGroup/InputGroup.tsx
 var import_react22 = require("react");
-var import_styled_components67 = require("styled-components");
-var import_jsx_runtime37 = require("react/jsx-runtime");
-var GroupWrapper = import_styled_components67.styled.div`
+var import_styled_components68 = require("styled-components");
+var import_jsx_runtime38 = require("react/jsx-runtime");
+var GroupWrapper = import_styled_components68.styled.div`
   display: flex;
   align-items: stretch;
   width: 100%;
@@ -2994,7 +3098,7 @@ var GroupWrapper = import_styled_components67.styled.div`
     }
   }
 `;
-var InputAddon = import_styled_components67.styled.span`
+var InputAddon = import_styled_components68.styled.span`
   display: inline-flex;
   align-items: center;
   padding: 0 ${({ theme }) => theme.spacing[3]};
@@ -3005,23 +3109,23 @@ var InputAddon = import_styled_components67.styled.span`
   user-select: none;
 `;
 var InputGroup = ({ leftAddon, rightAddon, children, ...rest }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(GroupWrapper, { ...rest, children: [
-    leftAddon && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(InputAddon, { children: leftAddon }),
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(GroupWrapper, { ...rest, children: [
+    leftAddon && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(InputAddon, { children: leftAddon }),
     children,
-    rightAddon && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(InputAddon, { children: rightAddon })
+    rightAddon && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(InputAddon, { children: rightAddon })
   ] });
 };
 
 // src/ui/components/Forms/MarkdownEditor/MarkdownEditor.tsx
 var import_core_react5 = require("core-react");
 var import_react23 = require("react");
-var import_styled_components68 = require("styled-components");
+var import_styled_components69 = require("styled-components");
 var import_icons10 = require("core-react/icons");
-var import_jsx_runtime38 = require("react/jsx-runtime");
-var Field = import_styled_components68.styled.div`
+var import_jsx_runtime39 = require("react/jsx-runtime");
+var Field = import_styled_components69.styled.div`
   margin-bottom: ${({ theme }) => theme.spacing[3]};
 `;
-var Root = import_styled_components68.styled.div`
+var Root = import_styled_components69.styled.div`
   overflow: hidden;
   background-color: ${({ theme }) => theme.colors.background.surface};
   border: 1px solid
@@ -3033,7 +3137,7 @@ var Root = import_styled_components68.styled.div`
     box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary.subtle};
   }
 `;
-var Toolbar = import_styled_components68.styled.div`
+var Toolbar = import_styled_components69.styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3043,13 +3147,13 @@ var Toolbar = import_styled_components68.styled.div`
   background-color: ${({ theme }) => theme.colors.background.surfaceHover};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.default};
 `;
-var Modes = import_styled_components68.styled.div`
+var Modes = import_styled_components69.styled.div`
   display: inline-flex;
   padding: 2px;
   background-color: ${({ theme }) => theme.colors.background.surfaceActive};
   border-radius: ${({ theme }) => theme.radii.md};
 `;
-var ModeButton = import_styled_components68.styled.button`
+var ModeButton = import_styled_components69.styled.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1]};
@@ -3063,13 +3167,13 @@ var ModeButton = import_styled_components68.styled.button`
   border-radius: ${({ theme }) => theme.radii.base};
   cursor: pointer;
 `;
-var FormatButtons = import_styled_components68.styled.div`
+var FormatButtons = import_styled_components69.styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 2px;
 `;
-var FormatButton = import_styled_components68.styled.button`
+var FormatButton = import_styled_components69.styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3098,13 +3202,13 @@ var FormatButton = import_styled_components68.styled.button`
     opacity: 0.5;
   }
 `;
-var Separator = import_styled_components68.styled.span`
+var Separator = import_styled_components69.styled.span`
   width: 1px;
   height: 18px;
   margin: 0 ${({ theme }) => theme.spacing[1]};
   background-color: ${({ theme }) => theme.colors.border.hover};
 `;
-var Input2 = import_styled_components68.styled.textarea`
+var Input2 = import_styled_components69.styled.textarea`
   display: block;
   width: 100%;
   padding: ${({ theme }) => theme.spacing[3]};
@@ -3121,11 +3225,11 @@ var Input2 = import_styled_components68.styled.textarea`
     display: none;
   }
 `;
-var Preview = import_styled_components68.styled.div`
+var Preview = import_styled_components69.styled.div`
   padding: ${({ theme }) => theme.spacing[3]};
   color: ${({ theme }) => theme.colors.text.body};
 `;
-var Empty = import_styled_components68.styled.em`
+var Empty = import_styled_components69.styled.em`
   color: ${({ theme }) => theme.colors.text.muted};
 `;
 var ACTIONS = {
@@ -3175,12 +3279,12 @@ var MarkdownEditor = ({
   const id = (0, import_react23.useId)();
   const { textareaRef, mode, setMode, applyAction, onKeyDown, previewMinHeight } = (0, import_core_react5.useMarkdownEditor)();
   const isPreview = mode === "preview";
-  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Field, { children: [
-    label && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Label, { htmlFor: id, $required: required, children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Root, { $invalid: Boolean(error), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Toolbar, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Modes, { role: "radiogroup", "aria-label": "Mode de l'\xE9diteur", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Field, { children: [
+    label && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Label, { htmlFor: id, $required: required, children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Root, { $invalid: Boolean(error), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Toolbar, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Modes, { role: "radiogroup", "aria-label": "Mode de l'\xE9diteur", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(
             ModeButton,
             {
               type: "button",
@@ -3189,12 +3293,12 @@ var MarkdownEditor = ({
               $active: !isPreview,
               onClick: () => setMode("write"),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(import_icons10.Icon, { name: "pencil", size: 12 }),
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_icons10.Icon, { name: "pencil", size: 12 }),
                 " \xC9crire"
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(
             ModeButton,
             {
               type: "button",
@@ -3203,14 +3307,14 @@ var MarkdownEditor = ({
               $active: isPreview,
               onClick: () => setMode("preview"),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(import_icons10.Icon, { name: "eye", size: 12 }),
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_icons10.Icon, { name: "eye", size: 12 }),
                 " Aper\xE7u"
               ]
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(FormatButtons, { role: "toolbar", "aria-label": "Mise en forme", children: actions.map(
-          (action, index) => action === "separator" ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Separator, { "aria-hidden": "true" }, `separator-${index}`) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(import_react23.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FormatButtons, { role: "toolbar", "aria-label": "Mise en forme", children: actions.map(
+          (action, index) => action === "separator" ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Separator, { "aria-hidden": "true" }, `separator-${index}`) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react23.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
             FormatButton,
             {
               type: "button",
@@ -3218,12 +3322,12 @@ var MarkdownEditor = ({
               "aria-label": ACTIONS[action].label,
               disabled: isPreview,
               onClick: () => applyAction(action),
-              children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(import_icons10.Icon, { name: ACTIONS[action].icon, size: 15 })
+              children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_icons10.Icon, { name: ACTIONS[action].icon, size: 15 })
             }
           ) }, action)
         ) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
         Input2,
         {
           id,
@@ -3241,18 +3345,18 @@ var MarkdownEditor = ({
           onKeyDown
         }
       ),
-      isPreview && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Preview, { style: { minHeight: previewMinHeight }, children: value.trim() ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MarkdownViewer, { breaks: true, children: value }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Empty, { children: "Rien \xE0 pr\xE9visualiser." }) })
+      isPreview && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Preview, { style: { minHeight: previewMinHeight }, children: value.trim() ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(MarkdownViewer, { breaks: true, children: value }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Empty, { children: "Rien \xE0 pr\xE9visualiser." }) })
     ] }),
-    (error || hint) && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(HelperText, { $state: error ? "invalid" : void 0, children: error ?? hint })
+    (error || hint) && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(HelperText, { $state: error ? "invalid" : void 0, children: error ?? hint })
   ] });
 };
 
 // src/ui/components/Forms/TagInput/TagInput.tsx
 var import_icons11 = require("core-react/icons");
 var import_react24 = require("react");
-var import_styled_components69 = require("styled-components");
-var import_jsx_runtime39 = require("react/jsx-runtime");
-var InputBox = import_styled_components69.styled.div`
+var import_styled_components70 = require("styled-components");
+var import_jsx_runtime40 = require("react/jsx-runtime");
+var InputBox = import_styled_components70.styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3269,7 +3373,7 @@ var InputBox = import_styled_components69.styled.div`
     box-shadow: 0 0 0 3px ${({ theme }) => theme.borders.focusRing.color};
   }
 `;
-var BareInput = import_styled_components69.styled.input`
+var BareInput = import_styled_components70.styled.input`
   flex: 1;
   min-width: 120px;
   border: none;
@@ -3279,7 +3383,7 @@ var BareInput = import_styled_components69.styled.input`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   color: ${({ theme }) => theme.colors.text.body};
 `;
-var RemoveBtn = import_styled_components69.styled.button`
+var RemoveBtn = import_styled_components70.styled.button`
   display: inline-flex;
   border: none;
   background: transparent;
@@ -3291,7 +3395,7 @@ var RemoveBtn = import_styled_components69.styled.button`
     opacity: 1;
   }
 `;
-var SuggestionsList = import_styled_components69.styled.ul`
+var SuggestionsList = import_styled_components70.styled.ul`
   margin: ${({ theme }) => theme.spacing[1]} 0 0 0;
   padding: ${({ theme }) => theme.spacing[1]};
   list-style: none;
@@ -3302,7 +3406,7 @@ var SuggestionsList = import_styled_components69.styled.ul`
   max-height: 160px;
   overflow-y: auto;
 `;
-var SuggestionItem = import_styled_components69.styled.li`
+var SuggestionItem = import_styled_components70.styled.li`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
@@ -3314,7 +3418,7 @@ var SuggestionItem = import_styled_components69.styled.li`
     background-color: ${({ theme }) => theme.colors.background.surfaceHover};
   }
 `;
-var ColorDot = import_styled_components69.styled.span`
+var ColorDot = import_styled_components70.styled.span`
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -3331,7 +3435,7 @@ var TagInput = ({
   hint,
   ...rest
 }) => {
-  const theme = (0, import_styled_components69.useTheme)();
+  const theme = (0, import_styled_components70.useTheme)();
   const [query, setQuery] = (0, import_react24.useState)("");
   const availableSuggestions = suggestions.filter(
     (s) => !value.some((v) => v.id === s.id) && s.label.toLowerCase().includes(query.toLowerCase())
@@ -3363,14 +3467,14 @@ var TagInput = ({
       }
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { ...rest, children: [
-    label && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Label, { children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(InputBox, { $hasError: Boolean(error), children: [
-      value.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Badge, { $pill: true, $color: tag.color, $variant: "primary", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { ...rest, children: [
+    label && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Label, { children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(InputBox, { $hasError: Boolean(error), children: [
+      value.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Badge, { $pill: true, $color: tag.color, $variant: "primary", children: [
         tag.label,
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(RemoveBtn, { type: "button", onClick: () => removeTag(tag.id), "aria-label": `Retirer ${tag.label}`, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_icons11.Icon, { name: "close", size: 12 }) })
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(RemoveBtn, { type: "button", onClick: () => removeTag(tag.id), "aria-label": `Retirer ${tag.label}`, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_icons11.Icon, { name: "close", size: 12 }) })
       ] }, tag.id)),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
         BareInput,
         {
           value: query,
@@ -3380,33 +3484,33 @@ var TagInput = ({
         }
       )
     ] }),
-    query && availableSuggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(SuggestionsList, { children: availableSuggestions.map((s) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(SuggestionItem, { onClick: () => addTag(s), children: [
-      s.color && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ColorDot, { $color: s.color }),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { children: s.label })
+    query && availableSuggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(SuggestionsList, { children: availableSuggestions.map((s) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(SuggestionItem, { onClick: () => addTag(s), children: [
+      s.color && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(ColorDot, { $color: s.color }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { children: s.label })
     ] }, s.id)) }),
-    error && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(HelperText, { $state: "invalid", children: error }),
-    !error && hint && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(HelperText, { children: hint })
+    error && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(HelperText, { $state: "invalid", children: error }),
+    !error && hint && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(HelperText, { children: hint })
   ] });
 };
 
 // src/ui/components/Grid/Col.tsx
-var import_styled_components70 = require("styled-components");
+var import_styled_components71 = require("styled-components");
 var computeWidth = (span) => {
   if (!span) return "";
   if (span === "auto") {
-    return import_styled_components70.css`
+    return import_styled_components71.css`
       flex: 1 0 0%;
       width: auto;
       max-width: 100%;
     `;
   }
   const pct = `${span / 12 * 100}%`;
-  return import_styled_components70.css`
+  return import_styled_components71.css`
     flex: 0 0 auto;
     width: ${pct};
   `;
 };
-var Col = import_styled_components70.styled.div.attrs((props) => ({
+var Col = import_styled_components71.styled.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   box-sizing: border-box;
@@ -3414,29 +3518,29 @@ var Col = import_styled_components70.styled.div.attrs((props) => ({
   width: 100%;
 
   ${({ $span }) => computeWidth($span)}
-  ${({ $offset }) => $offset && import_styled_components70.css`
+  ${({ $offset }) => $offset && import_styled_components71.css`
       margin-left: ${$offset / 12 * 100}%;
     `}
 
-  ${({ $sm, theme }) => $sm && import_styled_components70.css`
+  ${({ $sm, theme }) => $sm && import_styled_components71.css`
       ${theme.media.up("sm")} {
         ${computeWidth($sm)}
       }
     `}
 
-  ${({ $md, theme }) => $md && import_styled_components70.css`
+  ${({ $md, theme }) => $md && import_styled_components71.css`
       ${theme.media.up("md")} {
         ${computeWidth($md)}
       }
     `}
 
-  ${({ $lg, theme }) => $lg && import_styled_components70.css`
+  ${({ $lg, theme }) => $lg && import_styled_components71.css`
       ${theme.media.up("lg")} {
         ${computeWidth($lg)}
       }
     `}
 
-  ${({ $xl, theme }) => $xl && import_styled_components70.css`
+  ${({ $xl, theme }) => $xl && import_styled_components71.css`
       ${theme.media.up("xl")} {
         ${computeWidth($xl)}
       }
@@ -3444,8 +3548,8 @@ var Col = import_styled_components70.styled.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Columns.tsx
-var import_styled_components71 = require("styled-components");
-var Columns = import_styled_components71.styled.div.attrs((props) => ({
+var import_styled_components72 = require("styled-components");
+var Columns = import_styled_components72.styled.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   columns: ${({ $count, $width }) => {
@@ -3465,8 +3569,8 @@ var Columns = import_styled_components71.styled.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Container.tsx
-var import_styled_components72 = require("styled-components");
-var Container3 = import_styled_components72.styled.div.attrs((props) => ({
+var import_styled_components73 = require("styled-components");
+var Container3 = import_styled_components73.styled.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   width: 100%;
@@ -3475,7 +3579,7 @@ var Container3 = import_styled_components72.styled.div.attrs((props) => ({
   padding-right: ${({ theme }) => theme.spacing[4]};
   padding-left: ${({ theme }) => theme.spacing[4]};
 
-  ${({ $fluid, theme }) => !$fluid && import_styled_components72.css`
+  ${({ $fluid, theme }) => !$fluid && import_styled_components73.css`
       ${theme.media.up("sm")} {
         max-width: 540px;
       }
@@ -3495,8 +3599,8 @@ var Container3 = import_styled_components72.styled.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Flex.tsx
-var import_styled_components73 = require("styled-components");
-var Flex = import_styled_components73.styled.div.attrs((props) => ({
+var import_styled_components74 = require("styled-components");
+var Flex = import_styled_components74.styled.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   display: ${({ $inline }) => $inline ? "inline-flex" : "flex"};
@@ -3508,8 +3612,8 @@ var Flex = import_styled_components73.styled.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Grid.tsx
-var import_styled_components74 = require("styled-components");
-var Grid = import_styled_components74.styled.div.attrs((props) => ({
+var import_styled_components75 = require("styled-components");
+var Grid = import_styled_components75.styled.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   display: grid;
@@ -3523,8 +3627,8 @@ var Grid = import_styled_components74.styled.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Row.tsx
-var import_styled_components75 = require("styled-components");
-var Row = import_styled_components75.styled.div.attrs((props) => ({
+var import_styled_components76 = require("styled-components");
+var Row = import_styled_components76.styled.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   display: flex;
@@ -3542,9 +3646,9 @@ var Row = import_styled_components75.styled.div.attrs((props) => ({
 var import_icons12 = require("core-react/icons");
 var import_react25 = require("react");
 var import_core_react6 = require("core-react");
-var import_styled_components76 = require("styled-components");
-var import_jsx_runtime40 = require("react/jsx-runtime");
-var StyledBackButton = import_styled_components76.styled.button`
+var import_styled_components77 = require("styled-components");
+var import_jsx_runtime41 = require("react/jsx-runtime");
+var StyledBackButton = import_styled_components77.styled.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1.5]};
@@ -3584,28 +3688,28 @@ var BackButton = ({ label = "Retour", fallbackUrl, onClick, ...rest }) => {
       router.push(fallbackUrl);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(StyledBackButton, { type: "button", onClick: handleClick, ...rest, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_icons12.Icon, { name: "arrow-left", size: 18 }),
-    label && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { children: label })
+  return /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(StyledBackButton, { type: "button", onClick: handleClick, ...rest, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_icons12.Icon, { name: "arrow-left", size: 18 }),
+    label && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("span", { children: label })
   ] });
 };
 
 // src/ui/components/Navigation/Breadcrumb/Breadcrumb.tsx
 var import_icons14 = require("core-react/icons");
 var import_react28 = __toESM(require("react"), 1);
-var import_styled_components79 = require("styled-components");
+var import_styled_components80 = require("styled-components");
 
 // src/ui/components/Navigation/Breadcrumb/BreadcrumbContainer.tsx
 var import_react26 = require("react");
-var import_styled_components77 = require("styled-components");
-var import_jsx_runtime41 = require("react/jsx-runtime");
-var Nav = import_styled_components77.styled.nav`
+var import_styled_components78 = require("styled-components");
+var import_jsx_runtime42 = require("react/jsx-runtime");
+var Nav = import_styled_components78.styled.nav`
   display: flex;
   align-items: center;
   width: 100%;
   margin-bottom: ${({ theme }) => theme.spacing?.[2] || "8px"};
 `;
-var OrderedList = import_styled_components77.styled.ol`
+var OrderedList = import_styled_components78.styled.ol`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3614,22 +3718,22 @@ var OrderedList = import_styled_components77.styled.ol`
   margin: 0;
   padding: 0;
 `;
-var BreadcrumbContainer = ({ children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(Nav, { "aria-label": "Fil d'Ariane", ...props, children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(OrderedList, { children }) });
+var BreadcrumbContainer = ({ children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Nav, { "aria-label": "Fil d'Ariane", ...props, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(OrderedList, { children }) });
 
 // src/ui/components/Navigation/Breadcrumb/BreadcrumbItem.tsx
 var import_icons13 = require("core-react/icons");
 var import_react27 = require("react");
-var import_styled_components78 = require("styled-components");
+var import_styled_components79 = require("styled-components");
 var import_core_react7 = require("core-react");
-var import_jsx_runtime42 = require("react/jsx-runtime");
-var ItemLi = import_styled_components78.styled.li`
+var import_jsx_runtime43 = require("react/jsx-runtime");
+var ItemLi = import_styled_components79.styled.li`
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
   line-height: 1.4;
 `;
-var interactiveStyles = import_styled_components78.css`
+var interactiveStyles = import_styled_components79.css`
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -3648,10 +3752,10 @@ var interactiveStyles = import_styled_components78.css`
     background-color: ${({ theme }) => theme.colors.background.surfaceHover || "rgba(0, 0, 0, 0.04)"};
   }
 `;
-var StyledLink = import_styled_components78.styled.a`
+var StyledLink = import_styled_components79.styled.a`
   ${interactiveStyles}
 `;
-var StyledButton = import_styled_components78.styled.button`
+var StyledButton = import_styled_components79.styled.button`
   ${interactiveStyles}
   border: none;
   background: none;
@@ -3659,7 +3763,7 @@ var StyledButton = import_styled_components78.styled.button`
   font-family: inherit;
   font-size: inherit;
 `;
-var ActiveSpan = import_styled_components78.styled.span`
+var ActiveSpan = import_styled_components79.styled.span`
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -3678,16 +3782,16 @@ var BreadcrumbItem = ({
   active = false
 }) => {
   const linkProps = (0, import_core_react7.useLinkProps)(to);
-  const content = /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_jsx_runtime42.Fragment, { children: [
-    icon && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_icons13.Icon, { name: icon, size: 15 }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { children })
+  const content = /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_jsx_runtime43.Fragment, { children: [
+    icon && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_icons13.Icon, { name: icon, size: 15 }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { children })
   ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(ItemLi, { children: active ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(ActiveSpan, { "aria-current": "page", children: content }) : to ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(StyledLink, { ...linkProps, children: content }) : onClick ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(StyledButton, { type: "button", onClick, children: content }) : /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(ActiveSpan, { children: content }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ItemLi, { children: active ? /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ActiveSpan, { "aria-current": "page", children: content }) : to ? /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(StyledLink, { ...linkProps, children: content }) : onClick ? /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(StyledButton, { type: "button", onClick, children: content }) : /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ActiveSpan, { children: content }) });
 };
 
 // src/ui/components/Navigation/Breadcrumb/Breadcrumb.tsx
-var import_jsx_runtime43 = require("react/jsx-runtime");
-var Separator2 = import_styled_components79.styled.li`
+var import_jsx_runtime44 = require("react/jsx-runtime");
+var Separator2 = import_styled_components80.styled.li`
   display: inline-flex;
   align-items: center;
   color: ${({ theme }) => theme.colors.text.muted};
@@ -3702,7 +3806,7 @@ var Breadcrumb = ({
 }) => {
   const elements = items ? items.map((item, idx) => {
     const isLast = idx === items.length - 1;
-    return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
       BreadcrumbItem,
       {
         to: item.to,
@@ -3714,15 +3818,15 @@ var Breadcrumb = ({
       idx
     );
   }) : import_react28.default.Children.toArray(children);
-  return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(BreadcrumbContainer, { className, children: elements.map((el, index) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_react28.default.Fragment, { children: [
-    index > 0 && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Separator2, { "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_icons14.Icon, { name: separatorIcon, size: 15 }) }),
+  return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(BreadcrumbContainer, { className, children: elements.map((el, index) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(import_react28.default.Fragment, { children: [
+    index > 0 && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Separator2, { "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_icons14.Icon, { name: separatorIcon, size: 15 }) }),
     el
   ] }, index)) });
 };
 
 // src/ui/components/Navigation/Dropdown/Dropdown.tsx
 var import_react31 = require("react");
-var import_styled_components82 = require("styled-components");
+var import_styled_components83 = require("styled-components");
 
 // src/ui/components/Navigation/Dropdown/DropdownContext.tsx
 var import_react29 = require("react");
@@ -3737,9 +3841,9 @@ var useGenericDropdown = () => {
 
 // src/ui/components/Navigation/Dropdown/DropdownItem.tsx
 var import_react30 = require("react");
-var import_styled_components80 = require("styled-components");
-var import_jsx_runtime44 = require("react/jsx-runtime");
-var StyledItem = import_styled_components80.styled.button`
+var import_styled_components81 = require("styled-components");
+var import_jsx_runtime45 = require("react/jsx-runtime");
+var StyledItem = import_styled_components81.styled.button`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
@@ -3756,13 +3860,13 @@ var StyledItem = import_styled_components80.styled.button`
     background-color 0.15s ease,
     color 0.15s ease;
 
-  ${({ $variant, theme }) => $variant === "danger" ? import_styled_components80.css`
+  ${({ $variant, theme }) => $variant === "danger" ? import_styled_components81.css`
           color: ${theme.colors.danger.base};
           &:hover:not(:disabled) {
             background-color: ${theme.colors.danger.subtle};
             color: ${theme.colors.danger.dark};
           }
-        ` : import_styled_components80.css`
+        ` : import_styled_components81.css`
           color: ${theme.colors.text.body};
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
@@ -3775,7 +3879,7 @@ var StyledItem = import_styled_components80.styled.button`
     cursor: not-allowed;
   }
 `;
-var DropdownDivider = import_styled_components80.styled.li`
+var DropdownDivider = import_styled_components81.styled.li`
   height: 1px;
   margin: ${({ theme }) => `${theme.spacing[1]} 0`};
   background-color: ${({ theme }) => theme.colors.border.default};
@@ -3788,7 +3892,7 @@ var DropdownItem = ({
   ...rest
 }) => {
   const { close } = useGenericDropdown();
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("li", { role: "none", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("li", { role: "none", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(
     StyledItem,
     {
       type: "button",
@@ -3801,16 +3905,16 @@ var DropdownItem = ({
       ...rest,
       children: [
         icon,
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("span", { children })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { children })
       ]
     }
   ) });
 };
 
 // src/ui/components/Navigation/Dropdown/DropdownMenu.tsx
-var import_styled_components81 = require("styled-components");
-var import_jsx_runtime45 = require("react/jsx-runtime");
-var MenuList = import_styled_components81.styled.ul`
+var import_styled_components82 = require("styled-components");
+var import_jsx_runtime46 = require("react/jsx-runtime");
+var MenuList = import_styled_components82.styled.ul`
   position: absolute;
   top: calc(100% + ${({ theme }) => theme.spacing[1]});
   ${({ $align }) => $align === "right" ? "right: 0;" : "left: 0;"}
@@ -3833,22 +3937,22 @@ var DropdownMenu = ({
   ...rest
 }) => {
   const { isOpen } = useGenericDropdown();
-  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(MenuList, { $isOpen: isOpen, $align: align, $minWidth: minWidth, role: "menu", ...rest, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(MenuList, { $isOpen: isOpen, $align: align, $minWidth: minWidth, role: "menu", ...rest, children });
 };
 
 // src/ui/components/Navigation/Dropdown/Dropdown.tsx
-var import_jsx_runtime46 = require("react/jsx-runtime");
-var Wrapper2 = import_styled_components82.styled.div`
+var import_jsx_runtime47 = require("react/jsx-runtime");
+var Wrapper2 = import_styled_components83.styled.div`
   position: relative;
   display: inline-flex;
 `;
-var TriggerButton = import_styled_components82.styled.div`
+var TriggerButton = import_styled_components83.styled.div`
   display: inline-flex;
   cursor: pointer;
 `;
 var DropdownTrigger = ({ children, onClick, ...rest }) => {
   const { isOpen, toggle } = useGenericDropdown();
-  return /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
     TriggerButton,
     {
       onClick: (e) => {
@@ -3882,7 +3986,7 @@ var DropdownRoot = ({ children, ...rest }) => {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen]);
-  return /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(GenericDropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(Wrapper2, { ref, ...rest, children }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(GenericDropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Wrapper2, { ref, ...rest, children }) });
 };
 var Dropdown = Object.assign(DropdownRoot, {
   Trigger: DropdownTrigger,
@@ -3893,7 +3997,7 @@ var Dropdown = Object.assign(DropdownRoot, {
 
 // src/ui/components/Navigation/Navbar/Navbar.tsx
 var import_react33 = require("react");
-var import_styled_components83 = require("styled-components");
+var import_styled_components84 = require("styled-components");
 
 // src/ui/components/Navigation/Navbar/NavbarContext.tsx
 var import_react32 = require("react");
@@ -3907,8 +4011,8 @@ var useNavbar = () => {
 };
 
 // src/ui/components/Navigation/Navbar/Navbar.tsx
-var import_jsx_runtime47 = require("react/jsx-runtime");
-var StyledNav = import_styled_components83.styled.nav`
+var import_jsx_runtime48 = require("react/jsx-runtime");
+var StyledNav = import_styled_components84.styled.nav`
   position: relative;
   display: flex;
   flex-wrap: wrap;
@@ -3921,7 +4025,7 @@ var StyledNav = import_styled_components83.styled.nav`
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.default};
   box-sizing: border-box;
 
-  ${({ $sticky }) => $sticky && import_styled_components83.css`
+  ${({ $sticky }) => $sticky && import_styled_components84.css`
       position: sticky;
       top: 0;
       z-index: 100;
@@ -3947,12 +4051,12 @@ var Navbar = ({
     if (!isControlled) setInternalIsOpen(false);
     onToggle?.(false);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(NavbarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(StyledNav, { $sticky: sticky, ...props, children }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(NavbarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(StyledNav, { $sticky: sticky, ...props, children }) });
 };
 
 // src/ui/components/Navigation/Navbar/NavbarBrand.tsx
-var import_styled_components84 = require("styled-components");
-var NavbarBrand = import_styled_components84.styled.div`
+var import_styled_components85 = require("styled-components");
+var NavbarBrand = import_styled_components85.styled.div`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
@@ -3965,15 +4069,15 @@ var NavbarBrand = import_styled_components84.styled.div`
 
 // src/ui/components/Navigation/Navbar/NavbarCollapse.tsx
 var import_react34 = require("react");
-var import_styled_components85 = require("styled-components");
-var import_jsx_runtime48 = require("react/jsx-runtime");
-var CollapseWrapper = import_styled_components85.styled.div`
+var import_styled_components86 = require("styled-components");
+var import_jsx_runtime49 = require("react/jsx-runtime");
+var CollapseWrapper = import_styled_components86.styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex: 1;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && import_styled_components85.css`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && import_styled_components86.css`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: ${$isOpen ? "flex" : "none"};
         flex-direction: column;
@@ -3991,13 +4095,13 @@ var NavbarCollapse = ({
   ...props
 }) => {
   const { isOpen, breakpoint } = useNavbar();
-  return /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(CollapseWrapper, { $isOpen: isOpen, $breakpoint: breakpoint, ...props, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(CollapseWrapper, { $isOpen: isOpen, $breakpoint: breakpoint, ...props, children });
 };
 
 // src/ui/components/Navigation/Navbar/NavbarDropdown.tsx
 var import_core_react8 = require("core-react");
 var import_react36 = require("react");
-var import_styled_components86 = require("styled-components");
+var import_styled_components87 = require("styled-components");
 
 // src/ui/components/Navigation/Navbar/NavbarDropdownContext.tsx
 var import_react35 = require("react");
@@ -4009,12 +4113,12 @@ var useDropdown = () => {
 };
 
 // src/ui/components/Navigation/Navbar/NavbarDropdown.tsx
-var import_jsx_runtime49 = require("react/jsx-runtime");
-var DropdownContainer = import_styled_components86.styled.div`
+var import_jsx_runtime50 = require("react/jsx-runtime");
+var DropdownContainer = import_styled_components87.styled.div`
   position: relative;
   display: inline-flex;
 `;
-var DropdownToggleBtn = import_styled_components86.styled.button`
+var DropdownToggleBtn = import_styled_components87.styled.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1.5]};
@@ -4034,7 +4138,7 @@ var DropdownToggleBtn = import_styled_components86.styled.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 `;
-var MenuWrapper = import_styled_components86.styled.ul`
+var MenuWrapper = import_styled_components87.styled.ul`
   position: absolute;
   top: calc(100% + ${({ theme }) => theme.spacing[1.5]});
   ${({ $align }) => $align === "right" ? "right: 0;" : "left: 0;"};
@@ -4052,14 +4156,14 @@ var MenuWrapper = import_styled_components86.styled.ul`
   box-shadow: ${({ theme }) => theme.shadows.md};
   box-sizing: border-box;
 `;
-var HeaderLi = import_styled_components86.styled.li`
+var HeaderLi = import_styled_components87.styled.li`
   padding: ${({ theme }) => `${theme.spacing[2]}${theme.spacing[3]}`};
   margin-bottom: ${({ theme }) => theme.spacing[1]};
 `;
-var ItemLi2 = import_styled_components86.styled.li`
+var ItemLi2 = import_styled_components87.styled.li`
   width: 100%;
 `;
-var ItemBtn = import_styled_components86.styled.button`
+var ItemBtn = import_styled_components87.styled.button`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4083,12 +4187,12 @@ var ItemBtn = import_styled_components86.styled.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $active, theme }) => $active && import_styled_components86.css`
+  ${({ $active, theme }) => $active && import_styled_components87.css`
       background-color: ${theme.colors.primary.subtle};
       color: ${theme.colors.primary.base};
     `}
 `;
-var DividerLi = import_styled_components86.styled.li`
+var DividerLi = import_styled_components87.styled.li`
   margin: ${({ theme }) => `${theme.spacing[1.5]} 0`};
   border: none;
   height: 1px;
@@ -4117,18 +4221,18 @@ var NavbarDropdown = ({ children }) => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);
-  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(DropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(DropdownContainer, { ref: containerRef, children }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(DropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(DropdownContainer, { ref: containerRef, children }) });
 };
 var NavbarDropdownToggle = ({
   children,
   ...props
 }) => {
   const { isOpen, toggle } = useDropdown();
-  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(DropdownToggleBtn, { type: "button", onClick: toggle, "aria-haspopup": "true", "aria-expanded": isOpen, ...props, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(DropdownToggleBtn, { type: "button", onClick: toggle, "aria-haspopup": "true", "aria-expanded": isOpen, ...props, children });
 };
 var NavbarDropdownMenu = ({ children, align = "right" }) => {
   const { isOpen } = useDropdown();
-  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(MenuWrapper, { $isOpen: isOpen, $align: align, role: "menu", children });
+  return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(MenuWrapper, { $isOpen: isOpen, $align: align, role: "menu", children });
 };
 var NavbarDropdownItem = ({
   as,
@@ -4140,7 +4244,7 @@ var NavbarDropdownItem = ({
 }) => {
   const { close } = useDropdown();
   const linkProps = (0, import_core_react8.useLinkProps)(href, as);
-  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(ItemLi2, { role: "none", children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(ItemLi2, { role: "none", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
     ItemBtn,
     {
       ...linkProps,
@@ -4155,21 +4259,21 @@ var NavbarDropdownItem = ({
     }
   ) });
 };
-var NavbarDropdownHeader = ({ children }) => /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(HeaderLi, { role: "presentation", children });
-var NavbarDropdownDivider = () => /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(DividerLi, { role: "separator" });
+var NavbarDropdownHeader = ({ children }) => /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(HeaderLi, { role: "presentation", children });
+var NavbarDropdownDivider = () => /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(DividerLi, { role: "separator" });
 
 // src/ui/components/Navigation/Navbar/NavbarItem.tsx
-var import_styled_components87 = require("styled-components");
-var NavbarItem = import_styled_components87.styled.div`
+var import_styled_components88 = require("styled-components");
+var NavbarItem = import_styled_components88.styled.div`
   display: flex;
   align-items: center;
 `;
 
 // src/ui/components/Navigation/Navbar/NavbarLink.tsx
 var import_core_react9 = require("core-react");
-var import_styled_components88 = require("styled-components");
-var import_jsx_runtime50 = require("react/jsx-runtime");
-var NavbarLinkBase = import_styled_components88.styled.button`
+var import_styled_components89 = require("styled-components");
+var import_jsx_runtime51 = require("react/jsx-runtime");
+var NavbarLinkBase = import_styled_components89.styled.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1.5]};
@@ -4188,9 +4292,9 @@ var NavbarLinkBase = import_styled_components88.styled.button`
 
   color: ${({ $active, theme }) => $active ? theme.colors.primary.base : theme.colors.text.body};
 
-  ${({ $active, theme }) => $active ? import_styled_components88.css`
+  ${({ $active, theme }) => $active ? import_styled_components89.css`
           background-color: ${theme.colors.primary.subtle};
-        ` : import_styled_components88.css`
+        ` : import_styled_components89.css`
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
             color: ${theme.colors.text.heading};
@@ -4202,11 +4306,11 @@ var NavbarLinkBase = import_styled_components88.styled.button`
     cursor: not-allowed;
   }
 `;
-var NavbarLink = ({ href, as, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(NavbarLinkBase, { ...props, ...(0, import_core_react9.useLinkProps)(href, as) });
+var NavbarLink = ({ href, as, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(NavbarLinkBase, { ...props, ...(0, import_core_react9.useLinkProps)(href, as) });
 
 // src/ui/components/Navigation/Navbar/NavbarNav.tsx
-var import_styled_components89 = require("styled-components");
-var NavbarNav = import_styled_components89.styled.ul`
+var import_styled_components90 = require("styled-components");
+var NavbarNav = import_styled_components90.styled.ul`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1]};
@@ -4224,9 +4328,9 @@ var NavbarNav = import_styled_components89.styled.ul`
 // src/ui/components/Navigation/Navbar/NavbarToggle.tsx
 var import_icons15 = require("core-react/icons");
 var import_react37 = require("react");
-var import_styled_components90 = require("styled-components");
-var import_jsx_runtime51 = require("react/jsx-runtime");
-var ToggleButton = import_styled_components90.styled.button`
+var import_styled_components91 = require("styled-components");
+var import_jsx_runtime52 = require("react/jsx-runtime");
+var ToggleButton = import_styled_components91.styled.button`
   display: none;
   align-items: center;
   justify-content: center;
@@ -4243,7 +4347,7 @@ var ToggleButton = import_styled_components90.styled.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $breakpoint, theme }) => $breakpoint && import_styled_components90.css`
+  ${({ $breakpoint, theme }) => $breakpoint && import_styled_components91.css`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: inline-flex;
       }
@@ -4251,7 +4355,7 @@ var ToggleButton = import_styled_components90.styled.button`
 `;
 var NavbarToggle = ({ children, ...props }) => {
   const { isOpen, toggle, breakpoint } = useNavbar();
-  return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
     ToggleButton,
     {
       type: "button",
@@ -4260,7 +4364,7 @@ var NavbarToggle = ({ children, ...props }) => {
       "aria-expanded": isOpen,
       "aria-label": "Basculer la navigation",
       ...props,
-      children: children ?? /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_icons15.Icon, { name: isOpen ? "close" : "menu", size: 20 })
+      children: children ?? /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_icons15.Icon, { name: isOpen ? "close" : "menu", size: 20 })
     }
   );
 };
@@ -4271,9 +4375,9 @@ var import_react41 = require("react");
 
 // src/ui/components/Navigation/Pagination/PaginationButton.tsx
 var import_react38 = require("react");
-var import_styled_components91 = require("styled-components");
-var import_jsx_runtime52 = require("react/jsx-runtime");
-var StyledButton2 = import_styled_components91.styled.button`
+var import_styled_components92 = require("styled-components");
+var import_jsx_runtime53 = require("react/jsx-runtime");
+var StyledButton2 = import_styled_components92.styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4297,7 +4401,7 @@ var StyledButton2 = import_styled_components91.styled.button`
     background-color: ${({ theme }) => theme.colors.background.surfaceHover};
   }
 
-  ${({ $isActive, theme }) => $isActive && import_styled_components91.css`
+  ${({ $isActive, theme }) => $isActive && import_styled_components92.css`
       background-color: ${theme.colors.primary.base};
       border-color: ${theme.colors.primary.base};
       color: ${theme.colors.white};
@@ -4321,18 +4425,18 @@ var PaginationButton = ({
   children,
   ...rest
 }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(StyledButton2, { type, $isActive: isActive, "aria-current": isActive ? "page" : void 0, ...rest, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(StyledButton2, { type, $isActive: isActive, "aria-current": isActive ? "page" : void 0, ...rest, children });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationContainer.tsx
 var import_react39 = require("react");
-var import_styled_components92 = require("styled-components");
-var import_jsx_runtime53 = require("react/jsx-runtime");
-var Nav2 = import_styled_components92.styled.nav`
+var import_styled_components93 = require("styled-components");
+var import_jsx_runtime54 = require("react/jsx-runtime");
+var Nav2 = import_styled_components93.styled.nav`
   display: flex;
   justify-content: center;
 `;
-var List = import_styled_components92.styled.ul`
+var List = import_styled_components93.styled.ul`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1]};
@@ -4345,14 +4449,14 @@ var PaginationContainer = ({
   "aria-label": ariaLabel = "Navigation pagination",
   ...rest
 }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(Nav2, { "aria-label": ariaLabel, ...rest, children: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(List, { children }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime54.jsx)(Nav2, { "aria-label": ariaLabel, ...rest, children: /* @__PURE__ */ (0, import_jsx_runtime54.jsx)(List, { children }) });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationEllipsis.tsx
 var import_react40 = require("react");
-var import_styled_components93 = require("styled-components");
-var import_jsx_runtime54 = require("react/jsx-runtime");
-var StyledEllipsis = import_styled_components93.styled.span`
+var import_styled_components94 = require("styled-components");
+var import_jsx_runtime55 = require("react/jsx-runtime");
+var StyledEllipsis = import_styled_components94.styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4362,17 +4466,17 @@ var StyledEllipsis = import_styled_components93.styled.span`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
 `;
 var PaginationEllipsis = ({ children = "\u2026", ...rest }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime54.jsx)(StyledEllipsis, { "aria-hidden": "true", ...rest, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(StyledEllipsis, { "aria-hidden": "true", ...rest, children });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationItem.tsx
-var import_styled_components94 = require("styled-components");
-var PaginationItem = import_styled_components94.styled.li`
+var import_styled_components95 = require("styled-components");
+var PaginationItem = import_styled_components95.styled.li`
   display: inline-flex;
 `;
 
 // src/ui/components/Navigation/Pagination/Pagination.tsx
-var import_jsx_runtime55 = require("react/jsx-runtime");
+var import_jsx_runtime56 = require("react/jsx-runtime");
 var range = (start, end) => {
   const length = end - start + 1;
   return Array.from({ length }, (_, idx) => idx + start);
@@ -4406,31 +4510,31 @@ var BasePagination = ({
     return [1, "DOTS", ...range(leftSiblingIndex, rightSiblingIndex), "DOTS", totalPages];
   }, [totalPages, siblingCount, currentPage]);
   if (totalPages <= 1) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime55.jsxs)(PaginationContainer, { ...rest, children: [
-    showFirstLast && /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(PaginationContainer, { ...rest, children: [
+    showFirstLast && /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
       PaginationButton,
       {
         disabled: disabled || currentPage === 1,
         onClick: () => onPageChange(1),
         "aria-label": "Premi\xE8re page",
-        children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(import_icons16.Icon, { name: "chevron-double-left", size: 16 })
+        children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(import_icons16.Icon, { name: "chevron-double-left", size: 16 })
       }
     ) }),
-    /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
       PaginationButton,
       {
         disabled: disabled || currentPage === 1,
         onClick: () => onPageChange(currentPage - 1),
         "aria-label": "Page pr\xE9c\xE9dente",
-        children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(import_icons16.Icon, { name: "chevron-left", size: 16 })
+        children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(import_icons16.Icon, { name: "chevron-left", size: 16 })
       }
     ) }),
     paginationRange.map((pageNumber, idx) => {
       if (pageNumber === "DOTS") {
-        return /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(PaginationEllipsis, {}) }, `dots-${idx}`);
+        return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(PaginationEllipsis, {}) }, `dots-${idx}`);
       }
       const page = pageNumber;
-      return /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
         PaginationButton,
         {
           isActive: page === currentPage,
@@ -4441,22 +4545,22 @@ var BasePagination = ({
         }
       ) }, page);
     }),
-    /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
       PaginationButton,
       {
         disabled: disabled || currentPage === totalPages,
         onClick: () => onPageChange(currentPage + 1),
         "aria-label": "Page suivante",
-        children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(import_icons16.Icon, { name: "chevron-right", size: 16 })
+        children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(import_icons16.Icon, { name: "chevron-right", size: 16 })
       }
     ) }),
-    showFirstLast && /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
+    showFirstLast && /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(PaginationItem, { children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
       PaginationButton,
       {
         disabled: disabled || currentPage === totalPages,
         onClick: () => onPageChange(totalPages),
         "aria-label": "Derni\xE8re page",
-        children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(import_icons16.Icon, { name: "chevron-double-right", size: 16 })
+        children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(import_icons16.Icon, { name: "chevron-double-right", size: 16 })
       }
     ) })
   ] });
@@ -4470,11 +4574,11 @@ var Pagination = Object.assign(BasePagination, {
 
 // src/ui/components/Navigation/Sidebar/Sidebar.tsx
 var import_react43 = require("react");
-var import_styled_components95 = require("styled-components");
+var import_styled_components96 = require("styled-components");
 
 // src/ui/components/Navigation/Sidebar/SidebarContext.tsx
 var import_react42 = require("react");
-var import_jsx_runtime56 = require("react/jsx-runtime");
+var import_jsx_runtime57 = require("react/jsx-runtime");
 var SidebarContext = (0, import_react42.createContext)(null);
 var useSidebar = () => {
   const context = (0, import_react42.useContext)(SidebarContext);
@@ -4501,15 +4605,15 @@ var SidebarProvider = ({
     if (!isControlled) setInternalIsOpen(false);
     onToggle?.(false);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(SidebarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(SidebarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children });
 };
 
 // src/ui/components/Navigation/Sidebar/Sidebar.tsx
-var import_jsx_runtime57 = require("react/jsx-runtime");
-var Backdrop3 = import_styled_components95.styled.div`
+var import_jsx_runtime58 = require("react/jsx-runtime");
+var Backdrop3 = import_styled_components96.styled.div`
   display: none;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && import_styled_components95.css`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && import_styled_components96.css`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: ${$isOpen ? "block" : "none"};
         position: fixed;
@@ -4521,7 +4625,7 @@ var Backdrop3 = import_styled_components95.styled.div`
       }
     `}
 `;
-var StyledSidebar = import_styled_components95.styled.aside`
+var StyledSidebar = import_styled_components96.styled.aside`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -4536,7 +4640,7 @@ var StyledSidebar = import_styled_components95.styled.aside`
   overflow: hidden;
   transition: transform 0.25s ease-in-out;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && import_styled_components95.css`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && import_styled_components96.css`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         position: fixed;
         top: 0;
@@ -4558,22 +4662,22 @@ var SidebarInternal = ({
 }) => {
   const { isOpen, close, breakpoint } = useSidebar();
   const activeBreakpoint = overrideBreakpoint ?? breakpoint;
-  return /* @__PURE__ */ (0, import_jsx_runtime57.jsxs)(import_jsx_runtime57.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(Backdrop3, { $isOpen: isOpen, $breakpoint: activeBreakpoint, onClick: close }),
-    /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(StyledSidebar, { $isOpen: isOpen, $width: width, $breakpoint: activeBreakpoint, ...props, children })
+  return /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(import_jsx_runtime58.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Backdrop3, { $isOpen: isOpen, $breakpoint: activeBreakpoint, onClick: close }),
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(StyledSidebar, { $isOpen: isOpen, $width: width, $breakpoint: activeBreakpoint, ...props, children })
   ] });
 };
 var Sidebar = ({ breakpoint = "md", isOpen, onToggle, ...props }) => {
   const existingContext = (0, import_react43.useContext)(SidebarContext);
   if (existingContext) {
-    return /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(SidebarInternal, { breakpoint, ...props });
+    return /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(SidebarInternal, { breakpoint, ...props });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(SidebarProvider, { breakpoint, isOpen, onToggle, children: /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(SidebarInternal, { breakpoint, ...props }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(SidebarProvider, { breakpoint, isOpen, onToggle, children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(SidebarInternal, { breakpoint, ...props }) });
 };
 
 // src/ui/components/Navigation/Sidebar/SidebarHeader.tsx
-var import_styled_components96 = require("styled-components");
-var SidebarHeader = import_styled_components96.styled.div`
+var import_styled_components97 = require("styled-components");
+var SidebarHeader = import_styled_components97.styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4585,8 +4689,8 @@ var SidebarHeader = import_styled_components96.styled.div`
 `;
 
 // src/ui/components/Navigation/Sidebar/SidebarNav.tsx
-var import_styled_components97 = require("styled-components");
-var SidebarNav = import_styled_components97.styled.nav`
+var import_styled_components98 = require("styled-components");
+var SidebarNav = import_styled_components98.styled.nav`
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -4606,8 +4710,8 @@ var SidebarNav = import_styled_components97.styled.nav`
 `;
 
 // src/ui/components/Navigation/Sidebar/SidebarSection.tsx
-var import_styled_components98 = require("styled-components");
-var SidebarSection = import_styled_components98.styled.span`
+var import_styled_components99 = require("styled-components");
+var SidebarSection = import_styled_components99.styled.span`
   display: block;
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
   margin-top: ${({ theme }) => theme.spacing[2]};
@@ -4621,8 +4725,8 @@ var SidebarSection = import_styled_components98.styled.span`
 `;
 
 // src/ui/components/Navigation/Sidebar/SidebarItem.tsx
-var import_styled_components99 = require("styled-components");
-var SidebarItem = import_styled_components99.styled.div`
+var import_styled_components100 = require("styled-components");
+var SidebarItem = import_styled_components100.styled.div`
   display: flex;
   width: 100%;
 `;
@@ -4630,9 +4734,9 @@ var SidebarItem = import_styled_components99.styled.div`
 // src/ui/components/Navigation/Sidebar/SidebarLink.tsx
 var import_core_react10 = require("core-react");
 var import_react44 = require("react");
-var import_styled_components100 = require("styled-components");
-var import_jsx_runtime58 = require("react/jsx-runtime");
-var StyledLink2 = import_styled_components100.styled.button`
+var import_styled_components101 = require("styled-components");
+var import_jsx_runtime59 = require("react/jsx-runtime");
+var StyledLink2 = import_styled_components101.styled.button`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4652,10 +4756,10 @@ var StyledLink2 = import_styled_components100.styled.button`
 
   color: ${({ $active, theme }) => $active ? theme.colors.primary.base : theme.colors.text.body};
 
-  ${({ $active, theme }) => $active ? import_styled_components100.css`
+  ${({ $active, theme }) => $active ? import_styled_components101.css`
           background-color: ${theme.colors.primary.subtle};
           font-weight: ${theme.typography.weights.semibold};
-        ` : import_styled_components100.css`
+        ` : import_styled_components101.css`
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
             color: ${theme.colors.text.heading};
@@ -4667,12 +4771,12 @@ var StyledLink2 = import_styled_components100.styled.button`
     cursor: not-allowed;
   }
 `;
-var ContentSlot = import_styled_components100.styled.span`
+var ContentSlot = import_styled_components101.styled.span`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
 `;
-var BadgeSlot = import_styled_components100.styled.span`
+var BadgeSlot = import_styled_components101.styled.span`
   display: inline-flex;
   align-items: center;
 `;
@@ -4692,18 +4796,18 @@ var SidebarLink = ({
     onClick?.(e);
     if (breakpoint) close();
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(StyledLink2, { ...linkProps, $active: active, onClick: handleClick, ...props, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(ContentSlot, { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime59.jsxs)(StyledLink2, { ...linkProps, $active: active, onClick: handleClick, ...props, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime59.jsxs)(ContentSlot, { children: [
       icon,
       children
     ] }),
-    badge && /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(BadgeSlot, { children: badge })
+    badge && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(BadgeSlot, { children: badge })
   ] });
 };
 
 // src/ui/components/Navigation/Sidebar/SidebarFooter.tsx
-var import_styled_components101 = require("styled-components");
-var SidebarFooter = import_styled_components101.styled.div`
+var import_styled_components102 = require("styled-components");
+var SidebarFooter = import_styled_components102.styled.div`
   display: flex;
   flex-direction: column;
   padding: ${({ theme }) => theme.spacing[3]};
@@ -4716,9 +4820,9 @@ var SidebarFooter = import_styled_components101.styled.div`
 // src/ui/components/Navigation/Sidebar/SidebarToggle.tsx
 var import_icons17 = require("core-react/icons");
 var import_react45 = require("react");
-var import_styled_components102 = require("styled-components");
-var import_jsx_runtime59 = require("react/jsx-runtime");
-var ToggleButton2 = import_styled_components102.styled.button`
+var import_styled_components103 = require("styled-components");
+var import_jsx_runtime60 = require("react/jsx-runtime");
+var ToggleButton2 = import_styled_components103.styled.button`
   display: none;
   align-items: center;
   justify-content: center;
@@ -4735,7 +4839,7 @@ var ToggleButton2 = import_styled_components102.styled.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $breakpoint, theme }) => $breakpoint && import_styled_components102.css`
+  ${({ $breakpoint, theme }) => $breakpoint && import_styled_components103.css`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: inline-flex;
       }
@@ -4743,7 +4847,7 @@ var ToggleButton2 = import_styled_components102.styled.button`
 `;
 var SidebarToggle = ({ children, ...props }) => {
   const { isOpen, toggle, breakpoint } = useSidebar();
-  return /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(
     ToggleButton2,
     {
       type: "button",
@@ -4752,13 +4856,13 @@ var SidebarToggle = ({ children, ...props }) => {
       "aria-expanded": isOpen,
       "aria-label": "Basculer la barre lat\xE9rale",
       ...props,
-      children: children ?? /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_icons17.Icon, { name: isOpen ? "close" : "menu", size: 25 })
+      children: children ?? /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(import_icons17.Icon, { name: isOpen ? "close" : "menu", size: 25 })
     }
   );
 };
 
 // src/ui/components/Navigation/Tabs/TabContent.tsx
-var import_styled_components103 = require("styled-components");
+var import_styled_components104 = require("styled-components");
 
 // src/ui/components/Navigation/Tabs/TabsContext.tsx
 var import_react46 = require("react");
@@ -4772,19 +4876,19 @@ var useTabs = () => {
 };
 
 // src/ui/components/Navigation/Tabs/TabContent.tsx
-var import_jsx_runtime60 = require("react/jsx-runtime");
-var ContentWrapper3 = import_styled_components103.styled.div`
+var import_jsx_runtime61 = require("react/jsx-runtime");
+var ContentWrapper3 = import_styled_components104.styled.div`
   padding-top: ${({ theme }) => theme.spacing[4]};
 `;
 var TabContent = ({ value, children, ...rest }) => {
   const { activeTab } = useTabs();
   if (activeTab !== value) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(ContentWrapper3, { role: "tabpanel", ...rest, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(ContentWrapper3, { role: "tabpanel", ...rest, children });
 };
 
 // src/ui/components/Navigation/Tabs/TabList.tsx
-var import_styled_components104 = require("styled-components");
-var TabList = import_styled_components104.styled.div.attrs({
+var import_styled_components105 = require("styled-components");
+var TabList = import_styled_components105.styled.div.attrs({
   role: "tablist"
 })`
   display: flex;
@@ -4807,9 +4911,9 @@ var TabList = import_styled_components104.styled.div.attrs({
 
 // src/ui/components/Navigation/Tabs/Tabs.tsx
 var import_react47 = require("react");
-var import_styled_components105 = require("styled-components");
-var import_jsx_runtime61 = require("react/jsx-runtime");
-var TabsRoot = import_styled_components105.styled.div`
+var import_styled_components106 = require("styled-components");
+var import_jsx_runtime62 = require("react/jsx-runtime");
+var TabsRoot = import_styled_components106.styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -4825,13 +4929,13 @@ var Tabs = ({ defaultValue = "", value, onValueChange, children, ...rest }) => {
     }
     onValueChange?.(nextValue);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(TabsContext.Provider, { value: { activeTab, setActiveTab }, children: /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(TabsRoot, { ...rest, children }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime62.jsx)(TabsContext.Provider, { value: { activeTab, setActiveTab }, children: /* @__PURE__ */ (0, import_jsx_runtime62.jsx)(TabsRoot, { ...rest, children }) });
 };
 
 // src/ui/components/Navigation/Tabs/TabTrigger.tsx
-var import_styled_components106 = require("styled-components");
-var import_jsx_runtime62 = require("react/jsx-runtime");
-var TriggerButton2 = import_styled_components106.styled.button`
+var import_styled_components107 = require("styled-components");
+var import_jsx_runtime63 = require("react/jsx-runtime");
+var TriggerButton2 = import_styled_components107.styled.button`
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -4852,7 +4956,7 @@ var TriggerButton2 = import_styled_components106.styled.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $active, theme }) => $active && import_styled_components106.css`
+  ${({ $active, theme }) => $active && import_styled_components107.css`
       &::after {
         content: '';
         position: absolute;
@@ -4868,7 +4972,7 @@ var TriggerButton2 = import_styled_components106.styled.button`
 var TabTrigger = ({ value, disabled = false, children, ...rest }) => {
   const { activeTab, setActiveTab } = useTabs();
   const isActive = activeTab === value;
-  return /* @__PURE__ */ (0, import_jsx_runtime62.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime63.jsx)(
     TriggerButton2,
     {
       type: "button",
@@ -4886,7 +4990,7 @@ var TabTrigger = ({ value, disabled = false, children, ...rest }) => {
 // src/ui/components/Navigation/ThemeModeSwitcher.tsx
 var import_theme = require("core-react/theme");
 var import_react48 = require("react");
-var import_jsx_runtime63 = require("react/jsx-runtime");
+var import_jsx_runtime64 = require("react/jsx-runtime");
 var ICON_ONLY_OPTIONS = [
   { value: "system", icon: "laptop", title: "Syst\xE8me (suit le r\xE9glage de votre appareil)" },
   { value: "light", icon: "white-balance-sunny", title: "Th\xE8me clair" },
@@ -4894,7 +4998,7 @@ var ICON_ONLY_OPTIONS = [
 ];
 var ThemeModeSwitcher = ({ ...props }) => {
   const { preference, setPreference } = (0, import_theme.useTheme)();
-  return /* @__PURE__ */ (0, import_jsx_runtime63.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime64.jsx)(
     SegmentedControl,
     {
       "aria-label": "Mode d'affichage",
@@ -4907,7 +5011,7 @@ var ThemeModeSwitcher = ({ ...props }) => {
 };
 
 // src/ui/components/Typo/Display.tsx
-var import_styled_components107 = require("styled-components");
+var import_styled_components108 = require("styled-components");
 var displaySizes = {
   1: "5rem",
   2: "4.5rem",
@@ -4916,7 +5020,7 @@ var displaySizes = {
   5: "3rem",
   6: "2.5rem"
 };
-var Display = import_styled_components107.styled.h1.attrs((props) => ({
+var Display = import_styled_components108.styled.h1.attrs((props) => ({
   as: props.as || "h1"
 }))`
   font-family: ${({ theme }) => theme.typography.fonts.sans};
@@ -4953,8 +5057,8 @@ var Display = import_styled_components107.styled.h1.attrs((props) => ({
 `;
 
 // src/ui/components/Typo/Lead.tsx
-var import_styled_components108 = require("styled-components");
-var Lead = import_styled_components108.styled.p.attrs((props) => ({
+var import_styled_components109 = require("styled-components");
+var Lead = import_styled_components109.styled.p.attrs((props) => ({
   as: props.as || "p"
 }))`
   font-size: 1.25rem;
@@ -4989,7 +5093,7 @@ var Lead = import_styled_components108.styled.p.attrs((props) => ({
 `;
 
 // src/ui/components/Typo/Text.tsx
-var import_styled_components109 = require("styled-components");
+var import_styled_components110 = require("styled-components");
 var weightMap = {
   light: 300,
   normal: 400,
@@ -4997,7 +5101,7 @@ var weightMap = {
   semibold: 600,
   bold: 700
 };
-var Text = import_styled_components109.styled.span.attrs((props) => ({
+var Text = import_styled_components110.styled.span.attrs((props) => ({
   as: props.as || "span"
 }))`
   text-align: ${({ $align }) => $align || "inherit"};
@@ -5011,7 +5115,7 @@ var Text = import_styled_components109.styled.span.attrs((props) => ({
   return $size;
 }};
 
-  ${({ as, theme }) => as === "pre" && import_styled_components109.css`
+  ${({ as, theme }) => as === "pre" && import_styled_components110.css`
       font-family: ${theme.typography.fonts.mono};
       margin: 0;
     `}
@@ -5042,7 +5146,7 @@ var Text = import_styled_components109.styled.span.attrs((props) => ({
 `;
 
 // src/ui/components/Typo/Title.tsx
-var import_styled_components110 = require("styled-components");
+var import_styled_components111 = require("styled-components");
 var titleSizes = {
   h1: "2.25rem",
   h2: "1.875rem",
@@ -5051,7 +5155,7 @@ var titleSizes = {
   h5: "1.125rem",
   h6: "1rem"
 };
-var Title3 = import_styled_components110.styled.h1.attrs((props) => ({
+var Title3 = import_styled_components111.styled.h1.attrs((props) => ({
   as: props.as || "h3"
 }))`
   font-family: ${({ theme }) => theme.typography.fonts.sans};
@@ -5088,8 +5192,8 @@ var Title3 = import_styled_components110.styled.h1.attrs((props) => ({
 `;
 
 // src/ui/GlobalStyle.tsx
-var import_styled_components111 = require("styled-components");
-var GlobalStyle = import_styled_components111.createGlobalStyle`
+var import_styled_components112 = require("styled-components");
+var GlobalStyle = import_styled_components112.createGlobalStyle`
   ${({ $cssVariables = "" }) => $cssVariables}
 
   *,
@@ -5267,6 +5371,10 @@ var import_icons18 = require("core-react/icons");
   SidebarSection,
   SidebarToggle,
   Skeleton,
+  SkeletonCircle,
+  SkeletonGroup,
+  SkeletonLine,
+  SkeletonText,
   StatCard,
   TRow,
   TabContent,

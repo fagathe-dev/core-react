@@ -81,15 +81,7 @@ Barre de progression linéaire horizontale avec animation fluide des changements
 
 ## 4. Skeleton
 
-Bloc temporaire animé simulant la forme des contenus avant leur chargement effectif.
-
-### Props
-
-| Prop | Type | Défaut | Description |
-| :--- | :--- | :--- | :--- |
-| `$variant` | `'text' \| 'circular' \| 'rectangular'` | `'text'` | Forme géométrique et rayon de courbure |
-| `$width` | `string \| number` | `'100%'` | Largeur du conteneur (nombre en pixels ou chaîne CSS) |
-| `$height` | `string \| number` | Auto selon variante | Hauteur du conteneur (`1rem` par défaut pour `'text'`) |
+Briques de chargement à composer (`Skeleton`, `SkeletonLine`, `SkeletonText`, `SkeletonCircle`, `SkeletonGroup`) : voir [skeleton.md](skeleton.md).
 
 ---
 

@@ -1962,34 +1962,134 @@ var Progress = ({ value, height = "6px", variant = "primary", ...rest }) => {
 };
 
 // src/ui/components/Feedback/Skeleton/Skeleton.tsx
-import { styled as styled49, keyframes as keyframes4 } from "styled-components";
-var shimmer = keyframes4`
-  0% { opacity: 1; }
-  50% { opacity: 0.4; }
-  100% { opacity: 1; }
+import { styled as styled49 } from "styled-components";
+
+// src/ui/components/Feedback/Skeleton/skeletonStyles.ts
+import { css as css18, keyframes as keyframes4 } from "styled-components";
+var toCssSize = (value) => typeof value === "number" ? `${value}px` : value;
+var shimmerMove = keyframes4`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 `;
-var Skeleton = styled49.div`
+var pulse = keyframes4`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+`;
+var skeletonSurface = css18`
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
   background-color: ${({ theme }) => theme.colors.background.surfaceActive};
-  animation: ${shimmer} 1.6s ease-in-out infinite;
 
-  width: ${({ $width }) => $width ? typeof $width === "number" ? `${$width}px` : $width : "100%"};
-  height: ${({ $height, $variant }) => {
-  if ($height) return typeof $height === "number" ? `${$height}px` : $height;
-  if ($variant === "text") return "1rem";
-  return "100%";
+  ${({ $animation = "shimmer" }) => $animation === "pulse" && css18`
+      animation: ${pulse} 1.6s ease-in-out infinite;
+    `}
+
+  ${({ $animation = "shimmer", theme }) => $animation === "shimmer" && css18`
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          color-mix(in srgb, ${theme.colors.primary.base} 10%, transparent) 40%,
+          color-mix(in srgb, ${theme.colors.background.surface} 60%, transparent) 50%,
+          color-mix(in srgb, ${theme.colors.primary.base} 10%, transparent) 60%,
+          transparent 100%
+        );
+        animation: ${shimmerMove} 1.8s ease-in-out infinite;
+      }
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+
+    &::after {
+      display: none;
+    }
+  }
+`;
+
+// src/ui/components/Feedback/Skeleton/Skeleton.tsx
+import { jsx as jsx28, jsxs as jsxs14 } from "react/jsx-runtime";
+var Skeleton = styled49.div.attrs({ "aria-hidden": true })`
+  ${skeletonSurface}
+  display: block;
+  width: ${({ $width = "100%" }) => toCssSize($width)};
+  height: ${({ $height, $variant = "text" }) => {
+  if ($height !== void 0) return toCssSize($height);
+  return $variant === "text" ? "1rem" : "100%";
 }};
-
-  border-radius: ${({ $variant = "text", theme }) => {
+  border-radius: ${({ $radius, $variant = "text", theme }) => {
+  if ($radius !== void 0) return toCssSize($radius);
   if ($variant === "circular") return theme.radii.full;
+  if ($variant === "rounded") return theme.radii.xl;
   if ($variant === "text") return theme.radii.sm;
   return theme.radii.base;
 }};
 `;
+var SkeletonLine = styled49.div.attrs({ "aria-hidden": true })`
+  ${skeletonSurface}
+  display: block;
+  width: ${({ $width = "100%" }) => toCssSize($width)};
+  height: ${({ $height = "0.75rem" }) => toCssSize($height)};
+  border-radius: ${({ theme }) => theme.radii.full};
+`;
+var SkeletonCircle = styled49.div.attrs({ "aria-hidden": true })`
+  ${skeletonSurface}
+  display: block;
+  width: ${({ $size = 40 }) => toCssSize($size)};
+  height: ${({ $size = 40 }) => toCssSize($size)};
+  border-radius: ${({ theme }) => theme.radii.full};
+`;
+var TextStack = styled49.div.attrs({ "aria-hidden": true })`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ $gap }) => toCssSize($gap)};
+  width: 100%;
+`;
+var SkeletonText = ({
+  lines = 3,
+  widths,
+  $lastLineWidth = "60%",
+  $lineHeight = "0.75rem",
+  $gap = "0.625rem",
+  $animation,
+  ...rest
+}) => {
+  const lineWidths = widths ?? Array.from(
+    { length: Math.max(1, lines) },
+    (_, index) => index === lines - 1 && lines > 1 ? $lastLineWidth : "100%"
+  );
+  return /* @__PURE__ */ jsx28(TextStack, { $gap, ...rest, children: lineWidths.map((width, index) => /* @__PURE__ */ jsx28(SkeletonLine, { $width: width, $height: $lineHeight, $animation }, index)) });
+};
+var VisuallyHidden = styled49.span`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+`;
+var SkeletonGroup = ({
+  label = "Chargement\u2026",
+  children,
+  as: Component = "div",
+  ...rest
+}) => /* @__PURE__ */ jsxs14(Component, { role: "status", "aria-live": "polite", "aria-busy": "true", ...rest, children: [
+  /* @__PURE__ */ jsx28(VisuallyHidden, { children: label }),
+  children
+] });
 
 // src/ui/components/Feedback/Toast/Toast.tsx
 import { Icon as Icon8 } from "core-react/icons";
-import { styled as styled50, css as css18, keyframes as keyframes5 } from "styled-components";
-import { jsx as jsx28, jsxs as jsxs14 } from "react/jsx-runtime";
+import { styled as styled50, css as css19, keyframes as keyframes5 } from "styled-components";
+import { jsx as jsx29, jsxs as jsxs15 } from "react/jsx-runtime";
 var slideIn = keyframes5`
   from { opacity: 0; transform: translateX(100%); }
   to { opacity: 1; transform: translateX(0); }
@@ -2017,7 +2117,7 @@ var ToastWrapper = styled50.div`
 
   ${({ $variant, theme }) => {
   const role = theme.colors[$variant];
-  return css18`
+  return css19`
       border-left: 4px solid ${role.base};
       & > i {
         color: ${role.base};
@@ -2037,13 +2137,13 @@ var ToastTitle = styled50.strong`
   margin-bottom: ${({ theme }) => theme.spacing[0.5]};
 `;
 var Toast = ({ variant = "info", title, onClose, children, ...rest }) => {
-  return /* @__PURE__ */ jsxs14(ToastWrapper, { $variant: variant, role: "status", ...rest, children: [
-    /* @__PURE__ */ jsx28(Icon8, { name: toastIcons[variant], size: 20 }),
-    /* @__PURE__ */ jsxs14(Content, { children: [
-      title && /* @__PURE__ */ jsx28(ToastTitle, { children: title }),
-      /* @__PURE__ */ jsx28("div", { children })
+  return /* @__PURE__ */ jsxs15(ToastWrapper, { $variant: variant, role: "status", ...rest, children: [
+    /* @__PURE__ */ jsx29(Icon8, { name: toastIcons[variant], size: 20 }),
+    /* @__PURE__ */ jsxs15(Content, { children: [
+      title && /* @__PURE__ */ jsx29(ToastTitle, { children: title }),
+      /* @__PURE__ */ jsx29("div", { children })
     ] }),
-    onClose && /* @__PURE__ */ jsx28(
+    onClose && /* @__PURE__ */ jsx29(
       IconButton,
       {
         name: "close",
@@ -2100,7 +2200,7 @@ var useToast = () => ({
 });
 
 // src/ui/components/Feedback/Toast/ToastContainer.tsx
-import { jsx as jsx29 } from "react/jsx-runtime";
+import { jsx as jsx30 } from "react/jsx-runtime";
 var Viewport2 = styled51.div`
   position: fixed;
   bottom: ${({ theme }) => theme.spacing[4]};
@@ -2116,15 +2216,15 @@ var ToastContainer = () => {
   const removeToast2 = useToastStore((state2) => state2.removeToast);
   if (toasts.length === 0 || typeof document === "undefined") return null;
   return createPortal3(
-    /* @__PURE__ */ jsx29(Viewport2, { "aria-live": "polite", children: toasts.map((t) => /* @__PURE__ */ jsx29(Toast, { variant: t.variant, title: t.title, onClose: () => removeToast2(t.id), children: t.message }, t.id)) }),
+    /* @__PURE__ */ jsx30(Viewport2, { "aria-live": "polite", children: toasts.map((t) => /* @__PURE__ */ jsx30(Toast, { variant: t.variant, title: t.title, onClose: () => removeToast2(t.id), children: t.message }, t.id)) }),
     document.body
   );
 };
 
 // src/ui/components/Feedback/Tooltip/Tooltip.tsx
 import "react";
-import { styled as styled52, css as css19 } from "styled-components";
-import { jsx as jsx30, jsxs as jsxs15 } from "react/jsx-runtime";
+import { styled as styled52, css as css20 } from "styled-components";
+import { jsx as jsx31, jsxs as jsxs16 } from "react/jsx-runtime";
 var Bubble = styled52.span`
   position: absolute;
   z-index: 1200;
@@ -2145,26 +2245,26 @@ var Bubble = styled52.span`
   ${({ $placement }) => {
   switch ($placement) {
     case "bottom":
-      return css19`
+      return css20`
           top: calc(100% + 6px);
           left: 50%;
           transform: translateX(-50%) translateY(-4px);
         `;
     case "left":
-      return css19`
+      return css20`
           right: calc(100% + 6px);
           top: 50%;
           transform: translateY(-50%) translateX(4px);
         `;
     case "right":
-      return css19`
+      return css20`
           left: calc(100% + 6px);
           top: 50%;
           transform: translateY(-50%) translateX(-4px);
         `;
     case "top":
     default:
-      return css19`
+      return css20`
           bottom: calc(100% + 6px);
           left: 50%;
           transform: translateX(-50%) translateY(4px);
@@ -2182,9 +2282,9 @@ var Wrapper = styled52.span`
   }
 `;
 var Tooltip = ({ content, placement = "top", children, ...rest }) => {
-  return /* @__PURE__ */ jsxs15(Wrapper, { ...rest, children: [
+  return /* @__PURE__ */ jsxs16(Wrapper, { ...rest, children: [
     children,
-    /* @__PURE__ */ jsx30(Bubble, { $placement: placement, role: "tooltip", children: content })
+    /* @__PURE__ */ jsx31(Bubble, { $placement: placement, role: "tooltip", children: content })
   ] });
 };
 
@@ -2302,7 +2402,7 @@ var Radio = styled55.input.attrs({ type: "radio" })`
 `;
 
 // src/ui/components/Forms/Fields/CheckField.tsx
-import { jsx as jsx31, jsxs as jsxs16 } from "react/jsx-runtime";
+import { jsx as jsx32, jsxs as jsxs17 } from "react/jsx-runtime";
 var LabelContainer = styled56.label`
   display: inline-flex;
   align-items: center;
@@ -2320,12 +2420,12 @@ var CheckField = forwardRef(
     const generatedId = useId2();
     const id = customId || generatedId;
     const InputComponent = type === "radio" ? Radio : Checkbox;
-    return /* @__PURE__ */ jsxs16(FieldWrapper, { children: [
-      /* @__PURE__ */ jsxs16(LabelContainer, { htmlFor: id, children: [
-        /* @__PURE__ */ jsx31(InputComponent, { ref, id, ...inputProps }),
-        label && /* @__PURE__ */ jsx31("span", { children: label })
+    return /* @__PURE__ */ jsxs17(FieldWrapper, { children: [
+      /* @__PURE__ */ jsxs17(LabelContainer, { htmlFor: id, children: [
+        /* @__PURE__ */ jsx32(InputComponent, { ref, id, ...inputProps }),
+        label && /* @__PURE__ */ jsx32("span", { children: label })
       ] }),
-      error && /* @__PURE__ */ jsx31(HelperText, { $state: "invalid", children: error })
+      error && /* @__PURE__ */ jsx32(HelperText, { $state: "invalid", children: error })
     ] });
   }
 );
@@ -2391,7 +2491,7 @@ var Select = styled58.select`
 `;
 
 // src/ui/components/Forms/Fields/ChoiceField.tsx
-import { jsx as jsx32, jsxs as jsxs17 } from "react/jsx-runtime";
+import { jsx as jsx33, jsxs as jsxs18 } from "react/jsx-runtime";
 var FieldWrapper2 = styled59.div`
   display: flex;
   flex-direction: column;
@@ -2402,11 +2502,11 @@ var ChoiceField = forwardRef2(
     const generatedId = useId3();
     const id = customId || generatedId;
     const validationState = error ? "invalid" : selectProps.$validationState;
-    return /* @__PURE__ */ jsxs17(FieldWrapper2, { children: [
-      label && /* @__PURE__ */ jsx32(Label, { htmlFor: id, $required: required, children: label }),
-      /* @__PURE__ */ jsx32(Select, { ref, id, required, $validationState: validationState, ...selectProps, children }),
-      error && /* @__PURE__ */ jsx32(HelperText, { $state: "invalid", children: error }),
-      !error && hint && /* @__PURE__ */ jsx32(HelperText, { children: hint })
+    return /* @__PURE__ */ jsxs18(FieldWrapper2, { children: [
+      label && /* @__PURE__ */ jsx33(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ jsx33(Select, { ref, id, required, $validationState: validationState, ...selectProps, children }),
+      error && /* @__PURE__ */ jsx33(HelperText, { $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ jsx33(HelperText, { children: hint })
     ] });
   }
 );
@@ -2463,7 +2563,7 @@ var Textarea = styled60.textarea`
 `;
 
 // src/ui/components/Forms/Fields/TextareaField.tsx
-import { jsx as jsx33, jsxs as jsxs18 } from "react/jsx-runtime";
+import { jsx as jsx34, jsxs as jsxs19 } from "react/jsx-runtime";
 var FieldWrapper3 = styled61.div`
   display: flex;
   flex-direction: column;
@@ -2474,9 +2574,9 @@ var TextareaField = forwardRef3(
     const generatedId = useId4();
     const id = customId || generatedId;
     const validationState = error ? "invalid" : textareaProps.$validationState;
-    return /* @__PURE__ */ jsxs18(FieldWrapper3, { children: [
-      label && /* @__PURE__ */ jsx33(Label, { htmlFor: id, $required: required, children: label }),
-      /* @__PURE__ */ jsx33(
+    return /* @__PURE__ */ jsxs19(FieldWrapper3, { children: [
+      label && /* @__PURE__ */ jsx34(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ jsx34(
         Textarea,
         {
           ref,
@@ -2487,8 +2587,8 @@ var TextareaField = forwardRef3(
           ...textareaProps
         }
       ),
-      error && /* @__PURE__ */ jsx33(HelperText, { $state: "invalid", children: error }),
-      !error && hint && /* @__PURE__ */ jsx33(HelperText, { children: hint })
+      error && /* @__PURE__ */ jsx34(HelperText, { $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ jsx34(HelperText, { children: hint })
     ] });
   }
 );
@@ -2546,7 +2646,7 @@ var Input = styled62.input`
 `;
 
 // src/ui/components/Forms/Fields/TextField.tsx
-import { jsx as jsx34, jsxs as jsxs19 } from "react/jsx-runtime";
+import { jsx as jsx35, jsxs as jsxs20 } from "react/jsx-runtime";
 var FieldWrapper4 = styled63.div`
   display: flex;
   flex-direction: column;
@@ -2557,11 +2657,11 @@ var TextField = forwardRef4(
     const generatedId = useId5();
     const id = customId || generatedId;
     const validationState = error ? "invalid" : inputProps.$validationState;
-    return /* @__PURE__ */ jsxs19(FieldWrapper4, { children: [
-      label && /* @__PURE__ */ jsx34(Label, { htmlFor: id, $required: required, children: label }),
-      /* @__PURE__ */ jsx34(Input, { ref, id, required, $validationState: validationState, ...inputProps }),
-      error && /* @__PURE__ */ jsx34(HelperText, { $state: "invalid", children: error }),
-      !error && hint && /* @__PURE__ */ jsx34(HelperText, { children: hint })
+    return /* @__PURE__ */ jsxs20(FieldWrapper4, { children: [
+      label && /* @__PURE__ */ jsx35(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ jsx35(Input, { ref, id, required, $validationState: validationState, ...inputProps }),
+      error && /* @__PURE__ */ jsx35(HelperText, { $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ jsx35(HelperText, { children: hint })
     ] });
   }
 );
@@ -2621,7 +2721,7 @@ var Toggle = styled64.input.attrs((props) => ({
 `;
 
 // src/ui/components/Forms/Fields/ToggleField.tsx
-import { jsx as jsx35, jsxs as jsxs20 } from "react/jsx-runtime";
+import { jsx as jsx36, jsxs as jsxs21 } from "react/jsx-runtime";
 var LabelContainer2 = styled65.label`
   display: inline-flex;
   align-items: center;
@@ -2638,12 +2738,12 @@ var ToggleField = forwardRef5(
   ({ label, error, id: customId, ...toggleProps }, ref) => {
     const generatedId = useId6();
     const id = customId || generatedId;
-    return /* @__PURE__ */ jsxs20(FieldWrapper5, { children: [
-      /* @__PURE__ */ jsxs20(LabelContainer2, { htmlFor: id, children: [
-        /* @__PURE__ */ jsx35(Toggle, { ref, id, ...toggleProps }),
-        label && /* @__PURE__ */ jsx35("span", { children: label })
+    return /* @__PURE__ */ jsxs21(FieldWrapper5, { children: [
+      /* @__PURE__ */ jsxs21(LabelContainer2, { htmlFor: id, children: [
+        /* @__PURE__ */ jsx36(Toggle, { ref, id, ...toggleProps }),
+        label && /* @__PURE__ */ jsx36("span", { children: label })
       ] }),
-      error && /* @__PURE__ */ jsx35(HelperText, { $state: "invalid", children: error })
+      error && /* @__PURE__ */ jsx36(HelperText, { $state: "invalid", children: error })
     ] });
   }
 );
@@ -2652,8 +2752,8 @@ ToggleField.displayName = "ToggleField";
 // src/ui/components/Forms/FileDropzone/FileDropzone.tsx
 import { Icon as Icon9 } from "core-react/icons";
 import { useRef as useRef2, useState as useState4 } from "react";
-import { styled as styled66, css as css20 } from "styled-components";
-import { jsx as jsx36, jsxs as jsxs21 } from "react/jsx-runtime";
+import { styled as styled66, css as css21 } from "styled-components";
+import { jsx as jsx37, jsxs as jsxs22 } from "react/jsx-runtime";
 var DropArea = styled66.div`
   display: flex;
   flex-direction: column;
@@ -2673,14 +2773,14 @@ var DropArea = styled66.div`
   cursor: ${({ $disabled }) => $disabled ? "not-allowed" : "pointer"};
   transition: all 0.15s ease;
 
-  ${({ $disabled, theme }) => !$disabled && css20`
+  ${({ $disabled, theme }) => !$disabled && css21`
       &:hover {
         border-color: ${theme.colors.primary.base};
         background-color: ${theme.colors.background.surfaceHover};
       }
     `}
 
-  ${({ $disabled }) => $disabled && css20`
+  ${({ $disabled }) => $disabled && css21`
       opacity: 0.6;
     `}
 `;
@@ -2727,9 +2827,9 @@ var FileDropzone = ({
     }
   };
   const displayedError = error || localError;
-  return /* @__PURE__ */ jsxs21("div", { ...rest, children: [
-    label && /* @__PURE__ */ jsx36(Label, { children: label }),
-    /* @__PURE__ */ jsxs21(
+  return /* @__PURE__ */ jsxs22("div", { ...rest, children: [
+    label && /* @__PURE__ */ jsx37(Label, { children: label }),
+    /* @__PURE__ */ jsxs22(
       DropArea,
       {
         $isDragging: isDragging,
@@ -2747,7 +2847,7 @@ var FileDropzone = ({
           handleFiles(e.dataTransfer.files);
         },
         children: [
-          /* @__PURE__ */ jsx36(
+          /* @__PURE__ */ jsx37(
             HiddenInput,
             {
               ref: inputRef,
@@ -2762,9 +2862,9 @@ var FileDropzone = ({
               }
             }
           ),
-          /* @__PURE__ */ jsx36(Icon9, { name: "cloud-upload-outline", size: 32 }),
-          /* @__PURE__ */ jsx36(MainText, { children: "Glissez-d\xE9posez vos fichiers ici ou cliquez pour parcourir" }),
-          /* @__PURE__ */ jsxs21(SubText, { children: [
+          /* @__PURE__ */ jsx37(Icon9, { name: "cloud-upload-outline", size: 32 }),
+          /* @__PURE__ */ jsx37(MainText, { children: "Glissez-d\xE9posez vos fichiers ici ou cliquez pour parcourir" }),
+          /* @__PURE__ */ jsxs22(SubText, { children: [
             "Taille maximale : ",
             maxSizeMb,
             " Mo"
@@ -2772,15 +2872,15 @@ var FileDropzone = ({
         ]
       }
     ),
-    displayedError && /* @__PURE__ */ jsx36(HelperText, { $state: "invalid", children: displayedError }),
-    !displayedError && hint && /* @__PURE__ */ jsx36(HelperText, { children: hint })
+    displayedError && /* @__PURE__ */ jsx37(HelperText, { $state: "invalid", children: displayedError }),
+    !displayedError && hint && /* @__PURE__ */ jsx37(HelperText, { children: hint })
   ] });
 };
 
 // src/ui/components/Forms/InputGroup/InputGroup.tsx
 import "react";
 import { styled as styled67 } from "styled-components";
-import { jsx as jsx37, jsxs as jsxs22 } from "react/jsx-runtime";
+import { jsx as jsx38, jsxs as jsxs23 } from "react/jsx-runtime";
 var GroupWrapper = styled67.div`
   display: flex;
   align-items: stretch;
@@ -2817,10 +2917,10 @@ var InputAddon = styled67.span`
   user-select: none;
 `;
 var InputGroup = ({ leftAddon, rightAddon, children, ...rest }) => {
-  return /* @__PURE__ */ jsxs22(GroupWrapper, { ...rest, children: [
-    leftAddon && /* @__PURE__ */ jsx37(InputAddon, { children: leftAddon }),
+  return /* @__PURE__ */ jsxs23(GroupWrapper, { ...rest, children: [
+    leftAddon && /* @__PURE__ */ jsx38(InputAddon, { children: leftAddon }),
     children,
-    rightAddon && /* @__PURE__ */ jsx37(InputAddon, { children: rightAddon })
+    rightAddon && /* @__PURE__ */ jsx38(InputAddon, { children: rightAddon })
   ] });
 };
 
@@ -2829,7 +2929,7 @@ import { useMarkdownEditor } from "core-react";
 import { Fragment as Fragment4, useId as useId7 } from "react";
 import { styled as styled68 } from "styled-components";
 import { Icon as Icon10 } from "core-react/icons";
-import { jsx as jsx38, jsxs as jsxs23 } from "react/jsx-runtime";
+import { jsx as jsx39, jsxs as jsxs24 } from "react/jsx-runtime";
 var Field = styled68.div`
   margin-bottom: ${({ theme }) => theme.spacing[3]};
 `;
@@ -2987,12 +3087,12 @@ var MarkdownEditor = ({
   const id = useId7();
   const { textareaRef, mode, setMode, applyAction, onKeyDown, previewMinHeight } = useMarkdownEditor();
   const isPreview = mode === "preview";
-  return /* @__PURE__ */ jsxs23(Field, { children: [
-    label && /* @__PURE__ */ jsx38(Label, { htmlFor: id, $required: required, children: label }),
-    /* @__PURE__ */ jsxs23(Root, { $invalid: Boolean(error), children: [
-      /* @__PURE__ */ jsxs23(Toolbar, { children: [
-        /* @__PURE__ */ jsxs23(Modes, { role: "radiogroup", "aria-label": "Mode de l'\xE9diteur", children: [
-          /* @__PURE__ */ jsxs23(
+  return /* @__PURE__ */ jsxs24(Field, { children: [
+    label && /* @__PURE__ */ jsx39(Label, { htmlFor: id, $required: required, children: label }),
+    /* @__PURE__ */ jsxs24(Root, { $invalid: Boolean(error), children: [
+      /* @__PURE__ */ jsxs24(Toolbar, { children: [
+        /* @__PURE__ */ jsxs24(Modes, { role: "radiogroup", "aria-label": "Mode de l'\xE9diteur", children: [
+          /* @__PURE__ */ jsxs24(
             ModeButton,
             {
               type: "button",
@@ -3001,12 +3101,12 @@ var MarkdownEditor = ({
               $active: !isPreview,
               onClick: () => setMode("write"),
               children: [
-                /* @__PURE__ */ jsx38(Icon10, { name: "pencil", size: 12 }),
+                /* @__PURE__ */ jsx39(Icon10, { name: "pencil", size: 12 }),
                 " \xC9crire"
               ]
             }
           ),
-          /* @__PURE__ */ jsxs23(
+          /* @__PURE__ */ jsxs24(
             ModeButton,
             {
               type: "button",
@@ -3015,14 +3115,14 @@ var MarkdownEditor = ({
               $active: isPreview,
               onClick: () => setMode("preview"),
               children: [
-                /* @__PURE__ */ jsx38(Icon10, { name: "eye", size: 12 }),
+                /* @__PURE__ */ jsx39(Icon10, { name: "eye", size: 12 }),
                 " Aper\xE7u"
               ]
             }
           )
         ] }),
-        /* @__PURE__ */ jsx38(FormatButtons, { role: "toolbar", "aria-label": "Mise en forme", children: actions.map(
-          (action, index) => action === "separator" ? /* @__PURE__ */ jsx38(Separator, { "aria-hidden": "true" }, `separator-${index}`) : /* @__PURE__ */ jsx38(Fragment4, { children: /* @__PURE__ */ jsx38(
+        /* @__PURE__ */ jsx39(FormatButtons, { role: "toolbar", "aria-label": "Mise en forme", children: actions.map(
+          (action, index) => action === "separator" ? /* @__PURE__ */ jsx39(Separator, { "aria-hidden": "true" }, `separator-${index}`) : /* @__PURE__ */ jsx39(Fragment4, { children: /* @__PURE__ */ jsx39(
             FormatButton,
             {
               type: "button",
@@ -3030,12 +3130,12 @@ var MarkdownEditor = ({
               "aria-label": ACTIONS[action].label,
               disabled: isPreview,
               onClick: () => applyAction(action),
-              children: /* @__PURE__ */ jsx38(Icon10, { name: ACTIONS[action].icon, size: 15 })
+              children: /* @__PURE__ */ jsx39(Icon10, { name: ACTIONS[action].icon, size: 15 })
             }
           ) }, action)
         ) })
       ] }),
-      /* @__PURE__ */ jsx38(
+      /* @__PURE__ */ jsx39(
         Input2,
         {
           id,
@@ -3053,9 +3153,9 @@ var MarkdownEditor = ({
           onKeyDown
         }
       ),
-      isPreview && /* @__PURE__ */ jsx38(Preview, { style: { minHeight: previewMinHeight }, children: value.trim() ? /* @__PURE__ */ jsx38(MarkdownViewer, { breaks: true, children: value }) : /* @__PURE__ */ jsx38(Empty, { children: "Rien \xE0 pr\xE9visualiser." }) })
+      isPreview && /* @__PURE__ */ jsx39(Preview, { style: { minHeight: previewMinHeight }, children: value.trim() ? /* @__PURE__ */ jsx39(MarkdownViewer, { breaks: true, children: value }) : /* @__PURE__ */ jsx39(Empty, { children: "Rien \xE0 pr\xE9visualiser." }) })
     ] }),
-    (error || hint) && /* @__PURE__ */ jsx38(HelperText, { $state: error ? "invalid" : void 0, children: error ?? hint })
+    (error || hint) && /* @__PURE__ */ jsx39(HelperText, { $state: error ? "invalid" : void 0, children: error ?? hint })
   ] });
 };
 
@@ -3063,7 +3163,7 @@ var MarkdownEditor = ({
 import { Icon as Icon11 } from "core-react/icons";
 import { useState as useState5 } from "react";
 import { styled as styled69, useTheme as useTheme2 } from "styled-components";
-import { jsx as jsx39, jsxs as jsxs24 } from "react/jsx-runtime";
+import { jsx as jsx40, jsxs as jsxs25 } from "react/jsx-runtime";
 var InputBox = styled69.div`
   display: flex;
   flex-wrap: wrap;
@@ -3175,14 +3275,14 @@ var TagInput = ({
       }
     }
   };
-  return /* @__PURE__ */ jsxs24("div", { ...rest, children: [
-    label && /* @__PURE__ */ jsx39(Label, { children: label }),
-    /* @__PURE__ */ jsxs24(InputBox, { $hasError: Boolean(error), children: [
-      value.map((tag) => /* @__PURE__ */ jsxs24(Badge, { $pill: true, $color: tag.color, $variant: "primary", children: [
+  return /* @__PURE__ */ jsxs25("div", { ...rest, children: [
+    label && /* @__PURE__ */ jsx40(Label, { children: label }),
+    /* @__PURE__ */ jsxs25(InputBox, { $hasError: Boolean(error), children: [
+      value.map((tag) => /* @__PURE__ */ jsxs25(Badge, { $pill: true, $color: tag.color, $variant: "primary", children: [
         tag.label,
-        /* @__PURE__ */ jsx39(RemoveBtn, { type: "button", onClick: () => removeTag(tag.id), "aria-label": `Retirer ${tag.label}`, children: /* @__PURE__ */ jsx39(Icon11, { name: "close", size: 12 }) })
+        /* @__PURE__ */ jsx40(RemoveBtn, { type: "button", onClick: () => removeTag(tag.id), "aria-label": `Retirer ${tag.label}`, children: /* @__PURE__ */ jsx40(Icon11, { name: "close", size: 12 }) })
       ] }, tag.id)),
-      /* @__PURE__ */ jsx39(
+      /* @__PURE__ */ jsx40(
         BareInput,
         {
           value: query,
@@ -3192,28 +3292,28 @@ var TagInput = ({
         }
       )
     ] }),
-    query && availableSuggestions.length > 0 && /* @__PURE__ */ jsx39(SuggestionsList, { children: availableSuggestions.map((s) => /* @__PURE__ */ jsxs24(SuggestionItem, { onClick: () => addTag(s), children: [
-      s.color && /* @__PURE__ */ jsx39(ColorDot, { $color: s.color }),
-      /* @__PURE__ */ jsx39("span", { children: s.label })
+    query && availableSuggestions.length > 0 && /* @__PURE__ */ jsx40(SuggestionsList, { children: availableSuggestions.map((s) => /* @__PURE__ */ jsxs25(SuggestionItem, { onClick: () => addTag(s), children: [
+      s.color && /* @__PURE__ */ jsx40(ColorDot, { $color: s.color }),
+      /* @__PURE__ */ jsx40("span", { children: s.label })
     ] }, s.id)) }),
-    error && /* @__PURE__ */ jsx39(HelperText, { $state: "invalid", children: error }),
-    !error && hint && /* @__PURE__ */ jsx39(HelperText, { children: hint })
+    error && /* @__PURE__ */ jsx40(HelperText, { $state: "invalid", children: error }),
+    !error && hint && /* @__PURE__ */ jsx40(HelperText, { children: hint })
   ] });
 };
 
 // src/ui/components/Grid/Col.tsx
-import { styled as styled70, css as css21 } from "styled-components";
+import { styled as styled70, css as css22 } from "styled-components";
 var computeWidth = (span) => {
   if (!span) return "";
   if (span === "auto") {
-    return css21`
+    return css22`
       flex: 1 0 0%;
       width: auto;
       max-width: 100%;
     `;
   }
   const pct = `${span / 12 * 100}%`;
-  return css21`
+  return css22`
     flex: 0 0 auto;
     width: ${pct};
   `;
@@ -3226,29 +3326,29 @@ var Col = styled70.div.attrs((props) => ({
   width: 100%;
 
   ${({ $span }) => computeWidth($span)}
-  ${({ $offset }) => $offset && css21`
+  ${({ $offset }) => $offset && css22`
       margin-left: ${$offset / 12 * 100}%;
     `}
 
-  ${({ $sm, theme }) => $sm && css21`
+  ${({ $sm, theme }) => $sm && css22`
       ${theme.media.up("sm")} {
         ${computeWidth($sm)}
       }
     `}
 
-  ${({ $md, theme }) => $md && css21`
+  ${({ $md, theme }) => $md && css22`
       ${theme.media.up("md")} {
         ${computeWidth($md)}
       }
     `}
 
-  ${({ $lg, theme }) => $lg && css21`
+  ${({ $lg, theme }) => $lg && css22`
       ${theme.media.up("lg")} {
         ${computeWidth($lg)}
       }
     `}
 
-  ${({ $xl, theme }) => $xl && css21`
+  ${({ $xl, theme }) => $xl && css22`
       ${theme.media.up("xl")} {
         ${computeWidth($xl)}
       }
@@ -3277,7 +3377,7 @@ var Columns = styled71.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Container.tsx
-import { styled as styled72, css as css22 } from "styled-components";
+import { styled as styled72, css as css23 } from "styled-components";
 var Container3 = styled72.div.attrs((props) => ({
   as: props.as || "div"
 }))`
@@ -3287,7 +3387,7 @@ var Container3 = styled72.div.attrs((props) => ({
   padding-right: ${({ theme }) => theme.spacing[4]};
   padding-left: ${({ theme }) => theme.spacing[4]};
 
-  ${({ $fluid, theme }) => !$fluid && css22`
+  ${({ $fluid, theme }) => !$fluid && css23`
       ${theme.media.up("sm")} {
         max-width: 540px;
       }
@@ -3355,7 +3455,7 @@ import { Icon as Icon12 } from "core-react/icons";
 import "react";
 import { useUI as useUI3 } from "core-react";
 import { styled as styled76 } from "styled-components";
-import { jsx as jsx40, jsxs as jsxs25 } from "react/jsx-runtime";
+import { jsx as jsx41, jsxs as jsxs26 } from "react/jsx-runtime";
 var StyledBackButton = styled76.button`
   display: inline-flex;
   align-items: center;
@@ -3396,9 +3496,9 @@ var BackButton = ({ label = "Retour", fallbackUrl, onClick, ...rest }) => {
       router.push(fallbackUrl);
     }
   };
-  return /* @__PURE__ */ jsxs25(StyledBackButton, { type: "button", onClick: handleClick, ...rest, children: [
-    /* @__PURE__ */ jsx40(Icon12, { name: "arrow-left", size: 18 }),
-    label && /* @__PURE__ */ jsx40("span", { children: label })
+  return /* @__PURE__ */ jsxs26(StyledBackButton, { type: "button", onClick: handleClick, ...rest, children: [
+    /* @__PURE__ */ jsx41(Icon12, { name: "arrow-left", size: 18 }),
+    label && /* @__PURE__ */ jsx41("span", { children: label })
   ] });
 };
 
@@ -3410,7 +3510,7 @@ import { styled as styled79 } from "styled-components";
 // src/ui/components/Navigation/Breadcrumb/BreadcrumbContainer.tsx
 import "react";
 import { styled as styled77 } from "styled-components";
-import { jsx as jsx41 } from "react/jsx-runtime";
+import { jsx as jsx42 } from "react/jsx-runtime";
 var Nav = styled77.nav`
   display: flex;
   align-items: center;
@@ -3426,14 +3526,14 @@ var OrderedList = styled77.ol`
   margin: 0;
   padding: 0;
 `;
-var BreadcrumbContainer = ({ children, ...props }) => /* @__PURE__ */ jsx41(Nav, { "aria-label": "Fil d'Ariane", ...props, children: /* @__PURE__ */ jsx41(OrderedList, { children }) });
+var BreadcrumbContainer = ({ children, ...props }) => /* @__PURE__ */ jsx42(Nav, { "aria-label": "Fil d'Ariane", ...props, children: /* @__PURE__ */ jsx42(OrderedList, { children }) });
 
 // src/ui/components/Navigation/Breadcrumb/BreadcrumbItem.tsx
 import { Icon as Icon13 } from "core-react/icons";
 import "react";
-import { styled as styled78, css as css23 } from "styled-components";
+import { styled as styled78, css as css24 } from "styled-components";
 import { useLinkProps as useLinkProps4 } from "core-react";
-import { Fragment as Fragment5, jsx as jsx42, jsxs as jsxs26 } from "react/jsx-runtime";
+import { Fragment as Fragment5, jsx as jsx43, jsxs as jsxs27 } from "react/jsx-runtime";
 var ItemLi = styled78.li`
   display: inline-flex;
   align-items: center;
@@ -3441,7 +3541,7 @@ var ItemLi = styled78.li`
   font-size: 13px;
   line-height: 1.4;
 `;
-var interactiveStyles = css23`
+var interactiveStyles = css24`
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -3490,15 +3590,15 @@ var BreadcrumbItem = ({
   active = false
 }) => {
   const linkProps = useLinkProps4(to);
-  const content = /* @__PURE__ */ jsxs26(Fragment5, { children: [
-    icon && /* @__PURE__ */ jsx42(Icon13, { name: icon, size: 15 }),
-    /* @__PURE__ */ jsx42("span", { children })
+  const content = /* @__PURE__ */ jsxs27(Fragment5, { children: [
+    icon && /* @__PURE__ */ jsx43(Icon13, { name: icon, size: 15 }),
+    /* @__PURE__ */ jsx43("span", { children })
   ] });
-  return /* @__PURE__ */ jsx42(ItemLi, { children: active ? /* @__PURE__ */ jsx42(ActiveSpan, { "aria-current": "page", children: content }) : to ? /* @__PURE__ */ jsx42(StyledLink, { ...linkProps, children: content }) : onClick ? /* @__PURE__ */ jsx42(StyledButton, { type: "button", onClick, children: content }) : /* @__PURE__ */ jsx42(ActiveSpan, { children: content }) });
+  return /* @__PURE__ */ jsx43(ItemLi, { children: active ? /* @__PURE__ */ jsx43(ActiveSpan, { "aria-current": "page", children: content }) : to ? /* @__PURE__ */ jsx43(StyledLink, { ...linkProps, children: content }) : onClick ? /* @__PURE__ */ jsx43(StyledButton, { type: "button", onClick, children: content }) : /* @__PURE__ */ jsx43(ActiveSpan, { children: content }) });
 };
 
 // src/ui/components/Navigation/Breadcrumb/Breadcrumb.tsx
-import { jsx as jsx43, jsxs as jsxs27 } from "react/jsx-runtime";
+import { jsx as jsx44, jsxs as jsxs28 } from "react/jsx-runtime";
 var Separator2 = styled79.li`
   display: inline-flex;
   align-items: center;
@@ -3514,7 +3614,7 @@ var Breadcrumb = ({
 }) => {
   const elements = items ? items.map((item, idx) => {
     const isLast = idx === items.length - 1;
-    return /* @__PURE__ */ jsx43(
+    return /* @__PURE__ */ jsx44(
       BreadcrumbItem,
       {
         to: item.to,
@@ -3526,8 +3626,8 @@ var Breadcrumb = ({
       idx
     );
   }) : React15.Children.toArray(children);
-  return /* @__PURE__ */ jsx43(BreadcrumbContainer, { className, children: elements.map((el, index) => /* @__PURE__ */ jsxs27(React15.Fragment, { children: [
-    index > 0 && /* @__PURE__ */ jsx43(Separator2, { "aria-hidden": "true", children: /* @__PURE__ */ jsx43(Icon14, { name: separatorIcon, size: 15 }) }),
+  return /* @__PURE__ */ jsx44(BreadcrumbContainer, { className, children: elements.map((el, index) => /* @__PURE__ */ jsxs28(React15.Fragment, { children: [
+    index > 0 && /* @__PURE__ */ jsx44(Separator2, { "aria-hidden": "true", children: /* @__PURE__ */ jsx44(Icon14, { name: separatorIcon, size: 15 }) }),
     el
   ] }, index)) });
 };
@@ -3549,8 +3649,8 @@ var useGenericDropdown = () => {
 
 // src/ui/components/Navigation/Dropdown/DropdownItem.tsx
 import "react";
-import { styled as styled80, css as css24 } from "styled-components";
-import { jsx as jsx44, jsxs as jsxs28 } from "react/jsx-runtime";
+import { styled as styled80, css as css25 } from "styled-components";
+import { jsx as jsx45, jsxs as jsxs29 } from "react/jsx-runtime";
 var StyledItem = styled80.button`
   display: flex;
   align-items: center;
@@ -3568,13 +3668,13 @@ var StyledItem = styled80.button`
     background-color 0.15s ease,
     color 0.15s ease;
 
-  ${({ $variant, theme }) => $variant === "danger" ? css24`
+  ${({ $variant, theme }) => $variant === "danger" ? css25`
           color: ${theme.colors.danger.base};
           &:hover:not(:disabled) {
             background-color: ${theme.colors.danger.subtle};
             color: ${theme.colors.danger.dark};
           }
-        ` : css24`
+        ` : css25`
           color: ${theme.colors.text.body};
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
@@ -3600,7 +3700,7 @@ var DropdownItem = ({
   ...rest
 }) => {
   const { close } = useGenericDropdown();
-  return /* @__PURE__ */ jsx44("li", { role: "none", children: /* @__PURE__ */ jsxs28(
+  return /* @__PURE__ */ jsx45("li", { role: "none", children: /* @__PURE__ */ jsxs29(
     StyledItem,
     {
       type: "button",
@@ -3613,7 +3713,7 @@ var DropdownItem = ({
       ...rest,
       children: [
         icon,
-        /* @__PURE__ */ jsx44("span", { children })
+        /* @__PURE__ */ jsx45("span", { children })
       ]
     }
   ) });
@@ -3621,7 +3721,7 @@ var DropdownItem = ({
 
 // src/ui/components/Navigation/Dropdown/DropdownMenu.tsx
 import { styled as styled81 } from "styled-components";
-import { jsx as jsx45 } from "react/jsx-runtime";
+import { jsx as jsx46 } from "react/jsx-runtime";
 var MenuList = styled81.ul`
   position: absolute;
   top: calc(100% + ${({ theme }) => theme.spacing[1]});
@@ -3645,11 +3745,11 @@ var DropdownMenu = ({
   ...rest
 }) => {
   const { isOpen } = useGenericDropdown();
-  return /* @__PURE__ */ jsx45(MenuList, { $isOpen: isOpen, $align: align, $minWidth: minWidth, role: "menu", ...rest, children });
+  return /* @__PURE__ */ jsx46(MenuList, { $isOpen: isOpen, $align: align, $minWidth: minWidth, role: "menu", ...rest, children });
 };
 
 // src/ui/components/Navigation/Dropdown/Dropdown.tsx
-import { jsx as jsx46 } from "react/jsx-runtime";
+import { jsx as jsx47 } from "react/jsx-runtime";
 var Wrapper2 = styled82.div`
   position: relative;
   display: inline-flex;
@@ -3660,7 +3760,7 @@ var TriggerButton = styled82.div`
 `;
 var DropdownTrigger = ({ children, onClick, ...rest }) => {
   const { isOpen, toggle } = useGenericDropdown();
-  return /* @__PURE__ */ jsx46(
+  return /* @__PURE__ */ jsx47(
     TriggerButton,
     {
       onClick: (e) => {
@@ -3694,7 +3794,7 @@ var DropdownRoot = ({ children, ...rest }) => {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen]);
-  return /* @__PURE__ */ jsx46(GenericDropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ jsx46(Wrapper2, { ref, ...rest, children }) });
+  return /* @__PURE__ */ jsx47(GenericDropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ jsx47(Wrapper2, { ref, ...rest, children }) });
 };
 var Dropdown = Object.assign(DropdownRoot, {
   Trigger: DropdownTrigger,
@@ -3705,7 +3805,7 @@ var Dropdown = Object.assign(DropdownRoot, {
 
 // src/ui/components/Navigation/Navbar/Navbar.tsx
 import { useState as useState7 } from "react";
-import { styled as styled83, css as css25 } from "styled-components";
+import { styled as styled83, css as css26 } from "styled-components";
 
 // src/ui/components/Navigation/Navbar/NavbarContext.tsx
 import { createContext as createContext4, useContext as useContext4 } from "react";
@@ -3719,7 +3819,7 @@ var useNavbar = () => {
 };
 
 // src/ui/components/Navigation/Navbar/Navbar.tsx
-import { jsx as jsx47 } from "react/jsx-runtime";
+import { jsx as jsx48 } from "react/jsx-runtime";
 var StyledNav = styled83.nav`
   position: relative;
   display: flex;
@@ -3733,7 +3833,7 @@ var StyledNav = styled83.nav`
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.default};
   box-sizing: border-box;
 
-  ${({ $sticky }) => $sticky && css25`
+  ${({ $sticky }) => $sticky && css26`
       position: sticky;
       top: 0;
       z-index: 100;
@@ -3759,7 +3859,7 @@ var Navbar = ({
     if (!isControlled) setInternalIsOpen(false);
     onToggle?.(false);
   };
-  return /* @__PURE__ */ jsx47(NavbarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children: /* @__PURE__ */ jsx47(StyledNav, { $sticky: sticky, ...props, children }) });
+  return /* @__PURE__ */ jsx48(NavbarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children: /* @__PURE__ */ jsx48(StyledNav, { $sticky: sticky, ...props, children }) });
 };
 
 // src/ui/components/Navigation/Navbar/NavbarBrand.tsx
@@ -3777,15 +3877,15 @@ var NavbarBrand = styled84.div`
 
 // src/ui/components/Navigation/Navbar/NavbarCollapse.tsx
 import "react";
-import { styled as styled85, css as css26 } from "styled-components";
-import { jsx as jsx48 } from "react/jsx-runtime";
+import { styled as styled85, css as css27 } from "styled-components";
+import { jsx as jsx49 } from "react/jsx-runtime";
 var CollapseWrapper = styled85.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex: 1;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css26`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css27`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: ${$isOpen ? "flex" : "none"};
         flex-direction: column;
@@ -3803,13 +3903,13 @@ var NavbarCollapse = ({
   ...props
 }) => {
   const { isOpen, breakpoint } = useNavbar();
-  return /* @__PURE__ */ jsx48(CollapseWrapper, { $isOpen: isOpen, $breakpoint: breakpoint, ...props, children });
+  return /* @__PURE__ */ jsx49(CollapseWrapper, { $isOpen: isOpen, $breakpoint: breakpoint, ...props, children });
 };
 
 // src/ui/components/Navigation/Navbar/NavbarDropdown.tsx
 import { useLinkProps as useLinkProps5 } from "core-react";
 import { useEffect as useEffect5, useRef as useRef4, useState as useState8 } from "react";
-import { styled as styled86, css as css27 } from "styled-components";
+import { styled as styled86, css as css28 } from "styled-components";
 
 // src/ui/components/Navigation/Navbar/NavbarDropdownContext.tsx
 import { createContext as createContext5, useContext as useContext5 } from "react";
@@ -3821,7 +3921,7 @@ var useDropdown = () => {
 };
 
 // src/ui/components/Navigation/Navbar/NavbarDropdown.tsx
-import { jsx as jsx49 } from "react/jsx-runtime";
+import { jsx as jsx50 } from "react/jsx-runtime";
 var DropdownContainer = styled86.div`
   position: relative;
   display: inline-flex;
@@ -3895,7 +3995,7 @@ var ItemBtn = styled86.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $active, theme }) => $active && css27`
+  ${({ $active, theme }) => $active && css28`
       background-color: ${theme.colors.primary.subtle};
       color: ${theme.colors.primary.base};
     `}
@@ -3929,18 +4029,18 @@ var NavbarDropdown = ({ children }) => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);
-  return /* @__PURE__ */ jsx49(DropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ jsx49(DropdownContainer, { ref: containerRef, children }) });
+  return /* @__PURE__ */ jsx50(DropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ jsx50(DropdownContainer, { ref: containerRef, children }) });
 };
 var NavbarDropdownToggle = ({
   children,
   ...props
 }) => {
   const { isOpen, toggle } = useDropdown();
-  return /* @__PURE__ */ jsx49(DropdownToggleBtn, { type: "button", onClick: toggle, "aria-haspopup": "true", "aria-expanded": isOpen, ...props, children });
+  return /* @__PURE__ */ jsx50(DropdownToggleBtn, { type: "button", onClick: toggle, "aria-haspopup": "true", "aria-expanded": isOpen, ...props, children });
 };
 var NavbarDropdownMenu = ({ children, align = "right" }) => {
   const { isOpen } = useDropdown();
-  return /* @__PURE__ */ jsx49(MenuWrapper, { $isOpen: isOpen, $align: align, role: "menu", children });
+  return /* @__PURE__ */ jsx50(MenuWrapper, { $isOpen: isOpen, $align: align, role: "menu", children });
 };
 var NavbarDropdownItem = ({
   as,
@@ -3952,7 +4052,7 @@ var NavbarDropdownItem = ({
 }) => {
   const { close } = useDropdown();
   const linkProps = useLinkProps5(href, as);
-  return /* @__PURE__ */ jsx49(ItemLi2, { role: "none", children: /* @__PURE__ */ jsx49(
+  return /* @__PURE__ */ jsx50(ItemLi2, { role: "none", children: /* @__PURE__ */ jsx50(
     ItemBtn,
     {
       ...linkProps,
@@ -3967,8 +4067,8 @@ var NavbarDropdownItem = ({
     }
   ) });
 };
-var NavbarDropdownHeader = ({ children }) => /* @__PURE__ */ jsx49(HeaderLi, { role: "presentation", children });
-var NavbarDropdownDivider = () => /* @__PURE__ */ jsx49(DividerLi, { role: "separator" });
+var NavbarDropdownHeader = ({ children }) => /* @__PURE__ */ jsx50(HeaderLi, { role: "presentation", children });
+var NavbarDropdownDivider = () => /* @__PURE__ */ jsx50(DividerLi, { role: "separator" });
 
 // src/ui/components/Navigation/Navbar/NavbarItem.tsx
 import { styled as styled87 } from "styled-components";
@@ -3979,8 +4079,8 @@ var NavbarItem = styled87.div`
 
 // src/ui/components/Navigation/Navbar/NavbarLink.tsx
 import { useLinkProps as useLinkProps6 } from "core-react";
-import { styled as styled88, css as css28 } from "styled-components";
-import { jsx as jsx50 } from "react/jsx-runtime";
+import { styled as styled88, css as css29 } from "styled-components";
+import { jsx as jsx51 } from "react/jsx-runtime";
 var NavbarLinkBase = styled88.button`
   display: inline-flex;
   align-items: center;
@@ -4000,9 +4100,9 @@ var NavbarLinkBase = styled88.button`
 
   color: ${({ $active, theme }) => $active ? theme.colors.primary.base : theme.colors.text.body};
 
-  ${({ $active, theme }) => $active ? css28`
+  ${({ $active, theme }) => $active ? css29`
           background-color: ${theme.colors.primary.subtle};
-        ` : css28`
+        ` : css29`
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
             color: ${theme.colors.text.heading};
@@ -4014,7 +4114,7 @@ var NavbarLinkBase = styled88.button`
     cursor: not-allowed;
   }
 `;
-var NavbarLink = ({ href, as, ...props }) => /* @__PURE__ */ jsx50(NavbarLinkBase, { ...props, ...useLinkProps6(href, as) });
+var NavbarLink = ({ href, as, ...props }) => /* @__PURE__ */ jsx51(NavbarLinkBase, { ...props, ...useLinkProps6(href, as) });
 
 // src/ui/components/Navigation/Navbar/NavbarNav.tsx
 import { styled as styled89 } from "styled-components";
@@ -4036,8 +4136,8 @@ var NavbarNav = styled89.ul`
 // src/ui/components/Navigation/Navbar/NavbarToggle.tsx
 import { Icon as Icon15 } from "core-react/icons";
 import "react";
-import { styled as styled90, css as css29 } from "styled-components";
-import { jsx as jsx51 } from "react/jsx-runtime";
+import { styled as styled90, css as css30 } from "styled-components";
+import { jsx as jsx52 } from "react/jsx-runtime";
 var ToggleButton = styled90.button`
   display: none;
   align-items: center;
@@ -4055,7 +4155,7 @@ var ToggleButton = styled90.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $breakpoint, theme }) => $breakpoint && css29`
+  ${({ $breakpoint, theme }) => $breakpoint && css30`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: inline-flex;
       }
@@ -4063,7 +4163,7 @@ var ToggleButton = styled90.button`
 `;
 var NavbarToggle = ({ children, ...props }) => {
   const { isOpen, toggle, breakpoint } = useNavbar();
-  return /* @__PURE__ */ jsx51(
+  return /* @__PURE__ */ jsx52(
     ToggleButton,
     {
       type: "button",
@@ -4072,7 +4172,7 @@ var NavbarToggle = ({ children, ...props }) => {
       "aria-expanded": isOpen,
       "aria-label": "Basculer la navigation",
       ...props,
-      children: children ?? /* @__PURE__ */ jsx51(Icon15, { name: isOpen ? "close" : "menu", size: 20 })
+      children: children ?? /* @__PURE__ */ jsx52(Icon15, { name: isOpen ? "close" : "menu", size: 20 })
     }
   );
 };
@@ -4083,8 +4183,8 @@ import { useMemo as useMemo2 } from "react";
 
 // src/ui/components/Navigation/Pagination/PaginationButton.tsx
 import "react";
-import { styled as styled91, css as css30 } from "styled-components";
-import { jsx as jsx52 } from "react/jsx-runtime";
+import { styled as styled91, css as css31 } from "styled-components";
+import { jsx as jsx53 } from "react/jsx-runtime";
 var StyledButton2 = styled91.button`
   display: inline-flex;
   align-items: center;
@@ -4109,7 +4209,7 @@ var StyledButton2 = styled91.button`
     background-color: ${({ theme }) => theme.colors.background.surfaceHover};
   }
 
-  ${({ $isActive, theme }) => $isActive && css30`
+  ${({ $isActive, theme }) => $isActive && css31`
       background-color: ${theme.colors.primary.base};
       border-color: ${theme.colors.primary.base};
       color: ${theme.colors.white};
@@ -4133,13 +4233,13 @@ var PaginationButton = ({
   children,
   ...rest
 }) => {
-  return /* @__PURE__ */ jsx52(StyledButton2, { type, $isActive: isActive, "aria-current": isActive ? "page" : void 0, ...rest, children });
+  return /* @__PURE__ */ jsx53(StyledButton2, { type, $isActive: isActive, "aria-current": isActive ? "page" : void 0, ...rest, children });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationContainer.tsx
 import "react";
 import { styled as styled92 } from "styled-components";
-import { jsx as jsx53 } from "react/jsx-runtime";
+import { jsx as jsx54 } from "react/jsx-runtime";
 var Nav2 = styled92.nav`
   display: flex;
   justify-content: center;
@@ -4157,13 +4257,13 @@ var PaginationContainer = ({
   "aria-label": ariaLabel = "Navigation pagination",
   ...rest
 }) => {
-  return /* @__PURE__ */ jsx53(Nav2, { "aria-label": ariaLabel, ...rest, children: /* @__PURE__ */ jsx53(List, { children }) });
+  return /* @__PURE__ */ jsx54(Nav2, { "aria-label": ariaLabel, ...rest, children: /* @__PURE__ */ jsx54(List, { children }) });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationEllipsis.tsx
 import "react";
 import { styled as styled93 } from "styled-components";
-import { jsx as jsx54 } from "react/jsx-runtime";
+import { jsx as jsx55 } from "react/jsx-runtime";
 var StyledEllipsis = styled93.span`
   display: inline-flex;
   align-items: center;
@@ -4174,7 +4274,7 @@ var StyledEllipsis = styled93.span`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
 `;
 var PaginationEllipsis = ({ children = "\u2026", ...rest }) => {
-  return /* @__PURE__ */ jsx54(StyledEllipsis, { "aria-hidden": "true", ...rest, children });
+  return /* @__PURE__ */ jsx55(StyledEllipsis, { "aria-hidden": "true", ...rest, children });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationItem.tsx
@@ -4184,7 +4284,7 @@ var PaginationItem = styled94.li`
 `;
 
 // src/ui/components/Navigation/Pagination/Pagination.tsx
-import { jsx as jsx55, jsxs as jsxs29 } from "react/jsx-runtime";
+import { jsx as jsx56, jsxs as jsxs30 } from "react/jsx-runtime";
 var range = (start, end) => {
   const length = end - start + 1;
   return Array.from({ length }, (_, idx) => idx + start);
@@ -4218,31 +4318,31 @@ var BasePagination = ({
     return [1, "DOTS", ...range(leftSiblingIndex, rightSiblingIndex), "DOTS", totalPages];
   }, [totalPages, siblingCount, currentPage]);
   if (totalPages <= 1) return null;
-  return /* @__PURE__ */ jsxs29(PaginationContainer, { ...rest, children: [
-    showFirstLast && /* @__PURE__ */ jsx55(PaginationItem, { children: /* @__PURE__ */ jsx55(
+  return /* @__PURE__ */ jsxs30(PaginationContainer, { ...rest, children: [
+    showFirstLast && /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
       PaginationButton,
       {
         disabled: disabled || currentPage === 1,
         onClick: () => onPageChange(1),
         "aria-label": "Premi\xE8re page",
-        children: /* @__PURE__ */ jsx55(Icon16, { name: "chevron-double-left", size: 16 })
+        children: /* @__PURE__ */ jsx56(Icon16, { name: "chevron-double-left", size: 16 })
       }
     ) }),
-    /* @__PURE__ */ jsx55(PaginationItem, { children: /* @__PURE__ */ jsx55(
+    /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
       PaginationButton,
       {
         disabled: disabled || currentPage === 1,
         onClick: () => onPageChange(currentPage - 1),
         "aria-label": "Page pr\xE9c\xE9dente",
-        children: /* @__PURE__ */ jsx55(Icon16, { name: "chevron-left", size: 16 })
+        children: /* @__PURE__ */ jsx56(Icon16, { name: "chevron-left", size: 16 })
       }
     ) }),
     paginationRange.map((pageNumber, idx) => {
       if (pageNumber === "DOTS") {
-        return /* @__PURE__ */ jsx55(PaginationItem, { children: /* @__PURE__ */ jsx55(PaginationEllipsis, {}) }, `dots-${idx}`);
+        return /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(PaginationEllipsis, {}) }, `dots-${idx}`);
       }
       const page = pageNumber;
-      return /* @__PURE__ */ jsx55(PaginationItem, { children: /* @__PURE__ */ jsx55(
+      return /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
         PaginationButton,
         {
           isActive: page === currentPage,
@@ -4253,22 +4353,22 @@ var BasePagination = ({
         }
       ) }, page);
     }),
-    /* @__PURE__ */ jsx55(PaginationItem, { children: /* @__PURE__ */ jsx55(
+    /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
       PaginationButton,
       {
         disabled: disabled || currentPage === totalPages,
         onClick: () => onPageChange(currentPage + 1),
         "aria-label": "Page suivante",
-        children: /* @__PURE__ */ jsx55(Icon16, { name: "chevron-right", size: 16 })
+        children: /* @__PURE__ */ jsx56(Icon16, { name: "chevron-right", size: 16 })
       }
     ) }),
-    showFirstLast && /* @__PURE__ */ jsx55(PaginationItem, { children: /* @__PURE__ */ jsx55(
+    showFirstLast && /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
       PaginationButton,
       {
         disabled: disabled || currentPage === totalPages,
         onClick: () => onPageChange(totalPages),
         "aria-label": "Derni\xE8re page",
-        children: /* @__PURE__ */ jsx55(Icon16, { name: "chevron-double-right", size: 16 })
+        children: /* @__PURE__ */ jsx56(Icon16, { name: "chevron-double-right", size: 16 })
       }
     ) })
   ] });
@@ -4282,11 +4382,11 @@ var Pagination = Object.assign(BasePagination, {
 
 // src/ui/components/Navigation/Sidebar/Sidebar.tsx
 import { useContext as useContext7 } from "react";
-import { styled as styled95, css as css31 } from "styled-components";
+import { styled as styled95, css as css32 } from "styled-components";
 
 // src/ui/components/Navigation/Sidebar/SidebarContext.tsx
 import { createContext as createContext6, useContext as useContext6, useState as useState9 } from "react";
-import { jsx as jsx56 } from "react/jsx-runtime";
+import { jsx as jsx57 } from "react/jsx-runtime";
 var SidebarContext = createContext6(null);
 var useSidebar = () => {
   const context = useContext6(SidebarContext);
@@ -4313,15 +4413,15 @@ var SidebarProvider = ({
     if (!isControlled) setInternalIsOpen(false);
     onToggle?.(false);
   };
-  return /* @__PURE__ */ jsx56(SidebarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children });
+  return /* @__PURE__ */ jsx57(SidebarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children });
 };
 
 // src/ui/components/Navigation/Sidebar/Sidebar.tsx
-import { Fragment as Fragment6, jsx as jsx57, jsxs as jsxs30 } from "react/jsx-runtime";
+import { Fragment as Fragment6, jsx as jsx58, jsxs as jsxs31 } from "react/jsx-runtime";
 var Backdrop3 = styled95.div`
   display: none;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css31`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css32`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: ${$isOpen ? "block" : "none"};
         position: fixed;
@@ -4348,7 +4448,7 @@ var StyledSidebar = styled95.aside`
   overflow: hidden;
   transition: transform 0.25s ease-in-out;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css31`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css32`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         position: fixed;
         top: 0;
@@ -4370,17 +4470,17 @@ var SidebarInternal = ({
 }) => {
   const { isOpen, close, breakpoint } = useSidebar();
   const activeBreakpoint = overrideBreakpoint ?? breakpoint;
-  return /* @__PURE__ */ jsxs30(Fragment6, { children: [
-    /* @__PURE__ */ jsx57(Backdrop3, { $isOpen: isOpen, $breakpoint: activeBreakpoint, onClick: close }),
-    /* @__PURE__ */ jsx57(StyledSidebar, { $isOpen: isOpen, $width: width, $breakpoint: activeBreakpoint, ...props, children })
+  return /* @__PURE__ */ jsxs31(Fragment6, { children: [
+    /* @__PURE__ */ jsx58(Backdrop3, { $isOpen: isOpen, $breakpoint: activeBreakpoint, onClick: close }),
+    /* @__PURE__ */ jsx58(StyledSidebar, { $isOpen: isOpen, $width: width, $breakpoint: activeBreakpoint, ...props, children })
   ] });
 };
 var Sidebar = ({ breakpoint = "md", isOpen, onToggle, ...props }) => {
   const existingContext = useContext7(SidebarContext);
   if (existingContext) {
-    return /* @__PURE__ */ jsx57(SidebarInternal, { breakpoint, ...props });
+    return /* @__PURE__ */ jsx58(SidebarInternal, { breakpoint, ...props });
   }
-  return /* @__PURE__ */ jsx57(SidebarProvider, { breakpoint, isOpen, onToggle, children: /* @__PURE__ */ jsx57(SidebarInternal, { breakpoint, ...props }) });
+  return /* @__PURE__ */ jsx58(SidebarProvider, { breakpoint, isOpen, onToggle, children: /* @__PURE__ */ jsx58(SidebarInternal, { breakpoint, ...props }) });
 };
 
 // src/ui/components/Navigation/Sidebar/SidebarHeader.tsx
@@ -4442,8 +4542,8 @@ var SidebarItem = styled99.div`
 // src/ui/components/Navigation/Sidebar/SidebarLink.tsx
 import { useLinkProps as useLinkProps7 } from "core-react";
 import "react";
-import { styled as styled100, css as css32 } from "styled-components";
-import { jsx as jsx58, jsxs as jsxs31 } from "react/jsx-runtime";
+import { styled as styled100, css as css33 } from "styled-components";
+import { jsx as jsx59, jsxs as jsxs32 } from "react/jsx-runtime";
 var StyledLink2 = styled100.button`
   display: flex;
   align-items: center;
@@ -4464,10 +4564,10 @@ var StyledLink2 = styled100.button`
 
   color: ${({ $active, theme }) => $active ? theme.colors.primary.base : theme.colors.text.body};
 
-  ${({ $active, theme }) => $active ? css32`
+  ${({ $active, theme }) => $active ? css33`
           background-color: ${theme.colors.primary.subtle};
           font-weight: ${theme.typography.weights.semibold};
-        ` : css32`
+        ` : css33`
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
             color: ${theme.colors.text.heading};
@@ -4504,12 +4604,12 @@ var SidebarLink = ({
     onClick?.(e);
     if (breakpoint) close();
   };
-  return /* @__PURE__ */ jsxs31(StyledLink2, { ...linkProps, $active: active, onClick: handleClick, ...props, children: [
-    /* @__PURE__ */ jsxs31(ContentSlot, { children: [
+  return /* @__PURE__ */ jsxs32(StyledLink2, { ...linkProps, $active: active, onClick: handleClick, ...props, children: [
+    /* @__PURE__ */ jsxs32(ContentSlot, { children: [
       icon,
       children
     ] }),
-    badge && /* @__PURE__ */ jsx58(BadgeSlot, { children: badge })
+    badge && /* @__PURE__ */ jsx59(BadgeSlot, { children: badge })
   ] });
 };
 
@@ -4528,8 +4628,8 @@ var SidebarFooter = styled101.div`
 // src/ui/components/Navigation/Sidebar/SidebarToggle.tsx
 import { Icon as Icon17 } from "core-react/icons";
 import "react";
-import { styled as styled102, css as css33 } from "styled-components";
-import { jsx as jsx59 } from "react/jsx-runtime";
+import { styled as styled102, css as css34 } from "styled-components";
+import { jsx as jsx60 } from "react/jsx-runtime";
 var ToggleButton2 = styled102.button`
   display: none;
   align-items: center;
@@ -4547,7 +4647,7 @@ var ToggleButton2 = styled102.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $breakpoint, theme }) => $breakpoint && css33`
+  ${({ $breakpoint, theme }) => $breakpoint && css34`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: inline-flex;
       }
@@ -4555,7 +4655,7 @@ var ToggleButton2 = styled102.button`
 `;
 var SidebarToggle = ({ children, ...props }) => {
   const { isOpen, toggle, breakpoint } = useSidebar();
-  return /* @__PURE__ */ jsx59(
+  return /* @__PURE__ */ jsx60(
     ToggleButton2,
     {
       type: "button",
@@ -4564,7 +4664,7 @@ var SidebarToggle = ({ children, ...props }) => {
       "aria-expanded": isOpen,
       "aria-label": "Basculer la barre lat\xE9rale",
       ...props,
-      children: children ?? /* @__PURE__ */ jsx59(Icon17, { name: isOpen ? "close" : "menu", size: 25 })
+      children: children ?? /* @__PURE__ */ jsx60(Icon17, { name: isOpen ? "close" : "menu", size: 25 })
     }
   );
 };
@@ -4584,14 +4684,14 @@ var useTabs = () => {
 };
 
 // src/ui/components/Navigation/Tabs/TabContent.tsx
-import { jsx as jsx60 } from "react/jsx-runtime";
+import { jsx as jsx61 } from "react/jsx-runtime";
 var ContentWrapper3 = styled103.div`
   padding-top: ${({ theme }) => theme.spacing[4]};
 `;
 var TabContent = ({ value, children, ...rest }) => {
   const { activeTab } = useTabs();
   if (activeTab !== value) return null;
-  return /* @__PURE__ */ jsx60(ContentWrapper3, { role: "tabpanel", ...rest, children });
+  return /* @__PURE__ */ jsx61(ContentWrapper3, { role: "tabpanel", ...rest, children });
 };
 
 // src/ui/components/Navigation/Tabs/TabList.tsx
@@ -4620,7 +4720,7 @@ var TabList = styled104.div.attrs({
 // src/ui/components/Navigation/Tabs/Tabs.tsx
 import { useState as useState10 } from "react";
 import { styled as styled105 } from "styled-components";
-import { jsx as jsx61 } from "react/jsx-runtime";
+import { jsx as jsx62 } from "react/jsx-runtime";
 var TabsRoot = styled105.div`
   display: flex;
   flex-direction: column;
@@ -4637,12 +4737,12 @@ var Tabs = ({ defaultValue = "", value, onValueChange, children, ...rest }) => {
     }
     onValueChange?.(nextValue);
   };
-  return /* @__PURE__ */ jsx61(TabsContext.Provider, { value: { activeTab, setActiveTab }, children: /* @__PURE__ */ jsx61(TabsRoot, { ...rest, children }) });
+  return /* @__PURE__ */ jsx62(TabsContext.Provider, { value: { activeTab, setActiveTab }, children: /* @__PURE__ */ jsx62(TabsRoot, { ...rest, children }) });
 };
 
 // src/ui/components/Navigation/Tabs/TabTrigger.tsx
-import { styled as styled106, css as css34 } from "styled-components";
-import { jsx as jsx62 } from "react/jsx-runtime";
+import { styled as styled106, css as css35 } from "styled-components";
+import { jsx as jsx63 } from "react/jsx-runtime";
 var TriggerButton2 = styled106.button`
   position: relative;
   display: inline-flex;
@@ -4664,7 +4764,7 @@ var TriggerButton2 = styled106.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $active, theme }) => $active && css34`
+  ${({ $active, theme }) => $active && css35`
       &::after {
         content: '';
         position: absolute;
@@ -4680,7 +4780,7 @@ var TriggerButton2 = styled106.button`
 var TabTrigger = ({ value, disabled = false, children, ...rest }) => {
   const { activeTab, setActiveTab } = useTabs();
   const isActive = activeTab === value;
-  return /* @__PURE__ */ jsx62(
+  return /* @__PURE__ */ jsx63(
     TriggerButton2,
     {
       type: "button",
@@ -4698,7 +4798,7 @@ var TabTrigger = ({ value, disabled = false, children, ...rest }) => {
 // src/ui/components/Navigation/ThemeModeSwitcher.tsx
 import { useTheme as useTheme3 } from "core-react/theme";
 import "react";
-import { jsx as jsx63 } from "react/jsx-runtime";
+import { jsx as jsx64 } from "react/jsx-runtime";
 var ICON_ONLY_OPTIONS = [
   { value: "system", icon: "laptop", title: "Syst\xE8me (suit le r\xE9glage de votre appareil)" },
   { value: "light", icon: "white-balance-sunny", title: "Th\xE8me clair" },
@@ -4706,7 +4806,7 @@ var ICON_ONLY_OPTIONS = [
 ];
 var ThemeModeSwitcher = ({ ...props }) => {
   const { preference, setPreference } = useTheme3();
-  return /* @__PURE__ */ jsx63(
+  return /* @__PURE__ */ jsx64(
     SegmentedControl,
     {
       "aria-label": "Mode d'affichage",
@@ -4801,7 +4901,7 @@ var Lead = styled108.p.attrs((props) => ({
 `;
 
 // src/ui/components/Typo/Text.tsx
-import { styled as styled109, css as css35 } from "styled-components";
+import { styled as styled109, css as css36 } from "styled-components";
 var weightMap = {
   light: 300,
   normal: 400,
@@ -4823,7 +4923,7 @@ var Text = styled109.span.attrs((props) => ({
   return $size;
 }};
 
-  ${({ as, theme }) => as === "pre" && css35`
+  ${({ as, theme }) => as === "pre" && css36`
       font-family: ${theme.typography.fonts.mono};
       margin: 0;
     `}
@@ -5088,6 +5188,10 @@ export {
   SidebarSection,
   SidebarToggle,
   Skeleton,
+  SkeletonCircle,
+  SkeletonGroup,
+  SkeletonLine,
+  SkeletonText,
   StatCard,
   TRow,
   TabContent,

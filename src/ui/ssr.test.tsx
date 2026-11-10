@@ -16,6 +16,8 @@ import {
   Card,
   GlobalStyle,
   MarkdownViewer,
+  SkeletonGroup,
+  SkeletonText,
   TextField,
   ThemeModeSwitcher,
 } from 'core-react/ui';
@@ -47,6 +49,9 @@ describe('rendu serveur (Node, sans DOM)', () => {
                 blocks={[{ type: 'text', data: { content: 'Texte' } }]}
               />
               <Breadcrumb items={[{ label: 'Accueil', to: '/' }]} />
+              <SkeletonGroup label="Chargement">
+                <SkeletonText lines={2} />
+              </SkeletonGroup>
             </Card>
           </UIProvider>
         </ThemeProvider>,

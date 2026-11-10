@@ -10,6 +10,10 @@ import {
   Modal,
   Progress,
   Skeleton,
+  SkeletonCircle,
+  SkeletonGroup,
+  SkeletonLine,
+  SkeletonText,
   Toast,
   ToastContainer,
   Tooltip,
@@ -62,9 +66,41 @@ export const Loaders: Story = {
       </Flex>
       <Progress value={60} />
       <Progress value={100} variant="success" />
-      <Skeleton $width="70%" />
-      <Skeleton $variant="circular" $width={48} $height={48} />
-      <Skeleton $variant="rectangular" $height={96} />
+    </Flex>
+  ),
+};
+
+export const Skeletons: Story = {
+  render: () => (
+    <Flex $direction="column" $gap="1.5rem" style={{ maxWidth: 360 }}>
+      <Flex $gap="0.75rem" $align="center">
+        <Skeleton $variant="rectangular" $width={48} $height={48} />
+        <Skeleton $variant="rounded" $width={96} $height={48} />
+        <Skeleton $width={48} $height={48} $radius="50% 0" />
+        <SkeletonCircle $size={48} />
+      </Flex>
+      <Flex $direction="column" $gap="0.5rem">
+        <SkeletonLine $width="40%" $height="1.25rem" />
+        <SkeletonLine $width="25%" />
+      </Flex>
+      <Flex $gap="1rem">
+        <Skeleton $animation="pulse" $width="50%" $height={24} />
+        <Skeleton $animation="none" $width="50%" $height={24} />
+      </Flex>
+      {/* Carte composée : avatar + titre, paragraphe, pied */}
+      <SkeletonGroup label="Chargement de la publication…">
+        <Flex $direction="column" $gap="0.75rem">
+          <Flex $gap="0.75rem" $align="center">
+            <SkeletonCircle />
+            <Flex $direction="column" $gap="0.375rem" style={{ flex: 1 }}>
+              <SkeletonLine $width="50%" $height="0.875rem" />
+              <SkeletonLine $width="30%" $height="0.625rem" />
+            </Flex>
+          </Flex>
+          <Skeleton $variant="rounded" $height={140} />
+          <SkeletonText lines={3} />
+        </Flex>
+      </SkeletonGroup>
     </Flex>
   ),
 };

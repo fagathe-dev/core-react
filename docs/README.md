@@ -33,6 +33,7 @@ Markdown (rendu sûr, éditeur, hook) : [markdown.md](markdown.md).
 | Content | `Accordion`, `Card`, `EmptyState`, `ListGroup`, `StatCard`, `Table`, `MarkdownViewer` | [components/content.md](components/content.md) |
 | Embed | `Image`, `Video`, `Figure`, `Gallery`, `Carousel` | [components/embed.md](components/embed.md) |
 | Feedback | `Alert`, `Loading`, `Progress`, `Skeleton`, `Modal`, `ConfirmDialog`, `Toast`, `Drawer`, `Tooltip` | [components/feedback.md](components/feedback.md) |
+| Squelettes | `Skeleton`, `SkeletonLine`, `SkeletonText`, `SkeletonCircle`, `SkeletonGroup` | [components/skeleton.md](components/skeleton.md) |
 | Forms | `Input`, `Textarea`, `Select`, `Checkbox`, `Radio`, `Toggle`, champs `*Field`, `TagInput`, `FileDropzone`, `MarkdownEditor` | [components/forms.md](components/forms.md) |
 | Grid | `Container`, `Row`, `Col`, `Grid`, `Flex`, `Columns` | [components/grid.md](components/grid.md) |
 | Navigation | `Navbar`, `Sidebar`, `Tabs`, `Dropdown`, `Breadcrumb`, `Pagination`, `BackButton`, `ThemeModeSwitcher` | [components/navigation.md](components/navigation.md) |
