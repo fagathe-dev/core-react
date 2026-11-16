@@ -102,6 +102,8 @@ const SURFACE: Record<string, [Record<string, unknown>, string[]]> = {
       'MarkdownEditor',
       'Radio',
       'Select',
+      'Slider',
+      'SliderField',
       'TagInput',
       'Textarea',
       'TextField',

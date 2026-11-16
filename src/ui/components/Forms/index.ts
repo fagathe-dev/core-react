@@ -9,6 +9,7 @@ export * from './Label';
 export * from './MarkdownEditor';
 export * from './Radio';
 export * from './Select';
+export * from './Slider';
 export * from './TagInput';
 export * from './Textarea';
 export * from './Toggle';

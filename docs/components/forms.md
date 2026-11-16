@@ -14,6 +14,8 @@ import {
   ToggleField,
   // Contrôles enrichis (CMS)
   FileDropzone,
+  Slider,
+  SliderField,
   InputAddon,
   InputGroup,
   TagInput,
@@ -144,6 +146,44 @@ export const CoverUploader = () => (
   />
 );
 ```
+
+### 3.4. Slider & SliderField (curseur)
+
+Curseur basé sur un `<input type="range">` natif : clavier (flèches, Début, Fin, Page préc./suiv.), lecteurs d'écran et tactile sans code supplémentaire. Valeur mise en évidence au-dessus de la piste, libellés d'extrémités dessous. Équivalent Design System : `.form-range` (page `forms/range`).
+
+```tsx
+const [note, setNote] = useState<number | null>(null);
+
+<SliderField
+  label="Recommanderiez-vous ce service à votre entourage ?"
+  hint="0 = Pas du tout · 10 = Tout à fait"
+  value={note}
+  onChange={setNote}
+  min={0}
+  max={10}
+  minLabel="Pas du tout"
+  maxLabel="Absolument"
+  showValue
+  formatValue={(v) => `${v}/10`}
+/>
+```
+
+#### Props (`SliderProps`)
+
+| Prop | Type | Défaut | Rôle |
+| :--- | :--- | :--- | :--- |
+| `value` | `number \| null` | — | Contrôlé. `null` = pas encore de réponse : curseur au milieu, grisé, `emptyText` affiché et lu. Le premier geste (glisser, clic sur le curseur, flèche, Espace) fixe la valeur. |
+| `onChange` | `(value: number) => void` | — | Nouvelle valeur (nombre). |
+| `min` / `max` / `step` | `number` | `0` / `100` / `1` | Bornes et pas. |
+| `minLabel` / `maxLabel` | `string` | — | Libellés des extrémités, reliés au curseur par `aria-describedby`. |
+| `showValue` | `boolean` | `false` | Affiche la valeur en grand au-dessus de la piste. |
+| `formatValue` | `(v) => string` | `String` | Affichage et `aria-valuetext` (ex. « 8/10 », « 75 % »). |
+| `emptyText` | `string` | `'Déplacez le curseur'` | Texte sans réponse. |
+| `$validationState` | `ValidationState` | — | `invalid` : piste et remplissage en rouge, `aria-invalid`. |
+
+`SliderField` ajoute `label`, `hint`, `error`, `required` (contrat `FieldBaseProps`, comme `TextField`). Utilitaires exportés : `sliderMidpoint(min, max, step)`, `sliderPercent(value, min, max)`.
+
+Style : piste de 8 px dans une zone tactile de 44 px, partie remplie en `primary`, curseur blanc bordé (`primary`, ou `border.strong` sans réponse), anneau de focus du thème sur le curseur, animation désactivée sous `prefers-reduced-motion`.
 
 ---
 

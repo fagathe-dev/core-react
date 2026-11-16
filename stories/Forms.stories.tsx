@@ -14,6 +14,7 @@ import {
   MarkdownEditor,
   Radio,
   Select,
+  SliderField,
   TagInput,
   type TagOption,
   Textarea,
@@ -115,6 +116,54 @@ export const Groups: Story = {
       </InputGroup>
     </div>
   ),
+};
+
+/** Curseur : réponse vide au départ, puis valeur mise en évidence (« 8/10 »), libellés d'extrémités. */
+export const Range: Story = {
+  render: () => {
+    const RangeDemo = () => {
+      const [score, setScore] = useState<number | null>(null);
+      const [volume, setVolume] = useState<number | null>(40);
+      return (
+        <div style={{ maxWidth: 560 }}>
+          <SliderField
+            label="Recommanderiez-vous ce service à votre entourage ?"
+            hint="0 = Pas du tout · 10 = Tout à fait"
+            value={score}
+            onChange={setScore}
+            min={0}
+            max={10}
+            minLabel="Pas du tout"
+            maxLabel="Absolument"
+            showValue
+            formatValue={(v) => `${v}/10`}
+          />
+          <SliderField
+            label="Volume"
+            value={volume}
+            onChange={setVolume}
+            step={5}
+            formatValue={(v) => `${v} %`}
+            showValue
+          />
+          <SliderField
+            label="Note obligatoire"
+            value={null}
+            onChange={() => undefined}
+            error="Cette question est obligatoire."
+          />
+        </div>
+      );
+    };
+    return <RangeDemo />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const slider = canvas.getByRole('slider', { name: /Recommanderiez-vous/ });
+    await expect(slider).toHaveAttribute('aria-valuetext', 'Déplacez le curseur');
+    fireEvent.change(slider, { target: { value: '8' } });
+    await expect(canvas.getByText('8/10')).toBeInTheDocument();
+  },
 };
 
 export const Dropzone: Story = {
