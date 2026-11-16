@@ -2512,13 +2512,240 @@ var ChoiceField = forwardRef2(
 );
 ChoiceField.displayName = "ChoiceField";
 
-// src/ui/components/Forms/Fields/TextareaField.tsx
-import { forwardRef as forwardRef3, useId as useId4 } from "react";
+// src/ui/components/Forms/Fields/SliderField.tsx
+import { forwardRef as forwardRef4, useId as useId5 } from "react";
 import { styled as styled61 } from "styled-components";
 
+// src/ui/components/Forms/Slider/Slider.tsx
+import { forwardRef as forwardRef3, useId as useId4 } from "react";
+import { css as css21, styled as styled60 } from "styled-components";
+import { jsx as jsx34, jsxs as jsxs19 } from "react/jsx-runtime";
+var sliderMidpoint = (min, max, step) => {
+  const steps = Math.round((max - min) / 2 / step);
+  return Number((min + steps * step).toFixed(10));
+};
+var sliderPercent = (value, min, max) => max === min ? 0 : Math.min(100, Math.max(0, (value - min) / (max - min) * 100));
+var Slider = forwardRef3(
+  ({
+    value,
+    onChange,
+    min = 0,
+    max = 100,
+    step = 1,
+    minLabel,
+    maxLabel,
+    showValue = false,
+    formatValue = String,
+    emptyText = "D\xE9placez le curseur",
+    disabled,
+    id: customId,
+    "aria-describedby": describedBy,
+    $validationState,
+    ...rest
+  }, ref) => {
+    const generatedId = useId4();
+    const id = customId || generatedId;
+    const endsId = `${id}-ends`;
+    const empty = value === null;
+    const position = empty ? sliderMidpoint(min, max, step) : value;
+    const text = empty ? emptyText : formatValue(value);
+    const commitIfEmpty = (raw) => {
+      if (empty) onChange(Number(raw));
+    };
+    return /* @__PURE__ */ jsxs19(Wrapper2, { children: [
+      showValue && /* @__PURE__ */ jsx34(Value, { "aria-hidden": "true", $empty: empty, children: text }),
+      /* @__PURE__ */ jsx34(
+        Range,
+        {
+          ref,
+          id,
+          type: "range",
+          min,
+          max,
+          step,
+          value: position,
+          disabled,
+          "aria-valuetext": text,
+          "aria-describedby": [minLabel || maxLabel ? endsId : null, describedBy].filter(Boolean).join(" ") || void 0,
+          "aria-invalid": $validationState === "invalid" || void 0,
+          style: { "--slider-percent": `${sliderPercent(position, min, max)}%` },
+          $empty: empty,
+          $validationState,
+          onChange: (event) => onChange(Number(event.target.value)),
+          onPointerUp: (event) => commitIfEmpty(event.currentTarget.value),
+          onKeyDown: (event) => {
+            if (event.key === " " || event.key === "Enter") commitIfEmpty(event.currentTarget.value);
+          },
+          ...rest
+        }
+      ),
+      (minLabel || maxLabel) && /* @__PURE__ */ jsxs19(Ends, { id: endsId, children: [
+        /* @__PURE__ */ jsx34("span", { children: minLabel }),
+        " ",
+        /* @__PURE__ */ jsx34("span", { children: maxLabel })
+      ] })
+    ] });
+  }
+);
+Slider.displayName = "Slider";
+var Wrapper2 = styled60.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
+  width: 100%;
+`;
+var Value = styled60.output`
+  font-size: ${({ $empty, theme }) => $empty ? theme.typography.sizes.base : theme.typography.sizes["3xl"]};
+  font-weight: ${({ $empty, theme }) => $empty ? theme.typography.weights.regular : theme.typography.weights.bold};
+  font-variant-numeric: tabular-nums;
+  line-height: ${({ theme }) => theme.typography.lineHeights.tight};
+  color: ${({ $empty, theme }) => $empty ? theme.colors.text.muted : theme.colors.text.heading};
+`;
+var trackHeight = "0.5rem";
+var thumbSize = "1.5rem";
+var thumb = css21`
+  width: ${thumbSize};
+  height: ${thumbSize};
+  border: 2px solid
+    ${({ $empty, theme }) => $empty ? theme.colors.border.strong : theme.colors.primary.base};
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.white};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  cursor: grab;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`;
+var Range = styled60.input`
+  --slider-fill: ${({ $empty, $validationState, theme }) => $empty ? "transparent" : $validationState === "invalid" ? theme.colors.danger.base : theme.colors.primary.base};
+  --slider-track: ${({ $validationState, theme }) => $validationState === "invalid" ? theme.colors.danger.subtle : theme.colors.background.surfaceActive};
+
+  appearance: none;
+  width: 100%;
+  /* Zone tactile de 44px, piste fine centrée */
+  height: 2.75rem;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: ${trackHeight};
+    border-radius: ${({ theme }) => theme.radii.pill};
+    background: linear-gradient(
+      to right,
+      var(--slider-fill) var(--slider-percent),
+      var(--slider-track) var(--slider-percent)
+    );
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    margin-top: calc((${trackHeight} - ${thumbSize}) / 2);
+    ${thumb}
+  }
+
+  &::-moz-range-track {
+    height: ${trackHeight};
+    border-radius: ${({ theme }) => theme.radii.pill};
+    background: var(--slider-track);
+  }
+
+  &::-moz-range-progress {
+    height: ${trackHeight};
+    border-radius: ${({ theme }) => theme.radii.pill};
+    background: var(--slider-fill);
+  }
+
+  &::-moz-range-thumb {
+    ${thumb}
+  }
+
+  &:active::-webkit-slider-thumb {
+    cursor: grabbing;
+    transform: scale(1.1);
+  }
+
+  &:active::-moz-range-thumb {
+    cursor: grabbing;
+    transform: scale(1.1);
+  }
+
+  /* Anneau de focus porté par le curseur */
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 ${({ theme }) => theme.borders.focusRing.width}
+      ${({ theme }) => theme.borders.focusRing.color};
+  }
+
+  &:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 ${({ theme }) => theme.borders.focusRing.width}
+      ${({ theme }) => theme.borders.focusRing.color};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+var Ends = styled60.div`
+  display: flex;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing[3]};
+  font-size: ${({ theme }) => theme.typography.sizes.sm};
+  color: ${({ theme }) => theme.colors.text.muted};
+
+  span:last-child {
+    text-align: right;
+  }
+`;
+
+// src/ui/components/Forms/Fields/SliderField.tsx
+import { jsx as jsx35, jsxs as jsxs20 } from "react/jsx-runtime";
+var FieldWrapper3 = styled61.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: ${({ theme }) => theme.spacing[3]};
+`;
+var SliderField = forwardRef4(
+  ({ label, error, hint, required, id: customId, ...sliderProps }, ref) => {
+    const generatedId = useId5();
+    const id = customId || generatedId;
+    const helperId = `${id}-helper`;
+    const validationState = error ? "invalid" : sliderProps.$validationState;
+    return /* @__PURE__ */ jsxs20(FieldWrapper3, { children: [
+      label && /* @__PURE__ */ jsx35(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ jsx35(
+        Slider,
+        {
+          ref,
+          id,
+          required,
+          "aria-describedby": error || hint ? helperId : void 0,
+          ...sliderProps,
+          $validationState: validationState
+        }
+      ),
+      error && /* @__PURE__ */ jsx35(HelperText, { id: helperId, $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ jsx35(HelperText, { id: helperId, children: hint })
+    ] });
+  }
+);
+SliderField.displayName = "SliderField";
+
+// src/ui/components/Forms/Fields/TextareaField.tsx
+import { forwardRef as forwardRef5, useId as useId6 } from "react";
+import { styled as styled63 } from "styled-components";
+
 // src/ui/components/Forms/Textarea.tsx
-import { styled as styled60 } from "styled-components";
-var Textarea = styled60.textarea`
+import { styled as styled62 } from "styled-components";
+var Textarea = styled62.textarea`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
   font-size: ${({ theme }) => theme.typography.sizes.base};
@@ -2563,20 +2790,20 @@ var Textarea = styled60.textarea`
 `;
 
 // src/ui/components/Forms/Fields/TextareaField.tsx
-import { jsx as jsx34, jsxs as jsxs19 } from "react/jsx-runtime";
-var FieldWrapper3 = styled61.div`
+import { jsx as jsx36, jsxs as jsxs21 } from "react/jsx-runtime";
+var FieldWrapper4 = styled63.div`
   display: flex;
   flex-direction: column;
   margin-bottom: ${({ theme }) => theme.spacing[3]};
 `;
-var TextareaField = forwardRef3(
+var TextareaField = forwardRef5(
   ({ label, error, hint, required, id: customId, rows = 3, ...textareaProps }, ref) => {
-    const generatedId = useId4();
+    const generatedId = useId6();
     const id = customId || generatedId;
     const validationState = error ? "invalid" : textareaProps.$validationState;
-    return /* @__PURE__ */ jsxs19(FieldWrapper3, { children: [
-      label && /* @__PURE__ */ jsx34(Label, { htmlFor: id, $required: required, children: label }),
-      /* @__PURE__ */ jsx34(
+    return /* @__PURE__ */ jsxs21(FieldWrapper4, { children: [
+      label && /* @__PURE__ */ jsx36(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ jsx36(
         Textarea,
         {
           ref,
@@ -2587,20 +2814,20 @@ var TextareaField = forwardRef3(
           ...textareaProps
         }
       ),
-      error && /* @__PURE__ */ jsx34(HelperText, { $state: "invalid", children: error }),
-      !error && hint && /* @__PURE__ */ jsx34(HelperText, { children: hint })
+      error && /* @__PURE__ */ jsx36(HelperText, { $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ jsx36(HelperText, { children: hint })
     ] });
   }
 );
 TextareaField.displayName = "TextareaField";
 
 // src/ui/components/Forms/Fields/TextField.tsx
-import { forwardRef as forwardRef4, useId as useId5 } from "react";
-import { styled as styled63 } from "styled-components";
+import { forwardRef as forwardRef6, useId as useId7 } from "react";
+import { styled as styled65 } from "styled-components";
 
 // src/ui/components/Forms/Input.tsx
-import { styled as styled62 } from "styled-components";
-var Input = styled62.input`
+import { styled as styled64 } from "styled-components";
+var Input = styled64.input`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
   font-size: ${({ theme }) => theme.typography.sizes.base};
@@ -2646,34 +2873,34 @@ var Input = styled62.input`
 `;
 
 // src/ui/components/Forms/Fields/TextField.tsx
-import { jsx as jsx35, jsxs as jsxs20 } from "react/jsx-runtime";
-var FieldWrapper4 = styled63.div`
+import { jsx as jsx37, jsxs as jsxs22 } from "react/jsx-runtime";
+var FieldWrapper5 = styled65.div`
   display: flex;
   flex-direction: column;
   margin-bottom: ${({ theme }) => theme.spacing[3]};
 `;
-var TextField = forwardRef4(
+var TextField = forwardRef6(
   ({ label, error, hint, required, id: customId, ...inputProps }, ref) => {
-    const generatedId = useId5();
+    const generatedId = useId7();
     const id = customId || generatedId;
     const validationState = error ? "invalid" : inputProps.$validationState;
-    return /* @__PURE__ */ jsxs20(FieldWrapper4, { children: [
-      label && /* @__PURE__ */ jsx35(Label, { htmlFor: id, $required: required, children: label }),
-      /* @__PURE__ */ jsx35(Input, { ref, id, required, $validationState: validationState, ...inputProps }),
-      error && /* @__PURE__ */ jsx35(HelperText, { $state: "invalid", children: error }),
-      !error && hint && /* @__PURE__ */ jsx35(HelperText, { children: hint })
+    return /* @__PURE__ */ jsxs22(FieldWrapper5, { children: [
+      label && /* @__PURE__ */ jsx37(Label, { htmlFor: id, $required: required, children: label }),
+      /* @__PURE__ */ jsx37(Input, { ref, id, required, $validationState: validationState, ...inputProps }),
+      error && /* @__PURE__ */ jsx37(HelperText, { $state: "invalid", children: error }),
+      !error && hint && /* @__PURE__ */ jsx37(HelperText, { children: hint })
     ] });
   }
 );
 TextField.displayName = "TextField";
 
 // src/ui/components/Forms/Fields/ToggleField.tsx
-import { forwardRef as forwardRef5, useId as useId6 } from "react";
-import { styled as styled65 } from "styled-components";
+import { forwardRef as forwardRef7, useId as useId8 } from "react";
+import { styled as styled67 } from "styled-components";
 
 // src/ui/components/Forms/Toggle.tsx
-import { styled as styled64 } from "styled-components";
-var Toggle = styled64.input.attrs((props) => ({
+import { styled as styled66 } from "styled-components";
+var Toggle = styled66.input.attrs((props) => ({
   type: props.type || "checkbox"
 }))`
   appearance: none;
@@ -2721,8 +2948,8 @@ var Toggle = styled64.input.attrs((props) => ({
 `;
 
 // src/ui/components/Forms/Fields/ToggleField.tsx
-import { jsx as jsx36, jsxs as jsxs21 } from "react/jsx-runtime";
-var LabelContainer2 = styled65.label`
+import { jsx as jsx38, jsxs as jsxs23 } from "react/jsx-runtime";
+var LabelContainer2 = styled67.label`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[3]};
@@ -2731,19 +2958,19 @@ var LabelContainer2 = styled65.label`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   color: ${({ theme }) => theme.colors.text.body};
 `;
-var FieldWrapper5 = styled65.div`
+var FieldWrapper6 = styled67.div`
   margin-bottom: ${({ theme }) => theme.spacing[2]};
 `;
-var ToggleField = forwardRef5(
+var ToggleField = forwardRef7(
   ({ label, error, id: customId, ...toggleProps }, ref) => {
-    const generatedId = useId6();
+    const generatedId = useId8();
     const id = customId || generatedId;
-    return /* @__PURE__ */ jsxs21(FieldWrapper5, { children: [
-      /* @__PURE__ */ jsxs21(LabelContainer2, { htmlFor: id, children: [
-        /* @__PURE__ */ jsx36(Toggle, { ref, id, ...toggleProps }),
-        label && /* @__PURE__ */ jsx36("span", { children: label })
+    return /* @__PURE__ */ jsxs23(FieldWrapper6, { children: [
+      /* @__PURE__ */ jsxs23(LabelContainer2, { htmlFor: id, children: [
+        /* @__PURE__ */ jsx38(Toggle, { ref, id, ...toggleProps }),
+        label && /* @__PURE__ */ jsx38("span", { children: label })
       ] }),
-      error && /* @__PURE__ */ jsx36(HelperText, { $state: "invalid", children: error })
+      error && /* @__PURE__ */ jsx38(HelperText, { $state: "invalid", children: error })
     ] });
   }
 );
@@ -2752,9 +2979,9 @@ ToggleField.displayName = "ToggleField";
 // src/ui/components/Forms/FileDropzone/FileDropzone.tsx
 import { Icon as Icon9 } from "core-react/icons";
 import { useRef as useRef2, useState as useState4 } from "react";
-import { styled as styled66, css as css21 } from "styled-components";
-import { jsx as jsx37, jsxs as jsxs22 } from "react/jsx-runtime";
-var DropArea = styled66.div`
+import { styled as styled68, css as css22 } from "styled-components";
+import { jsx as jsx39, jsxs as jsxs24 } from "react/jsx-runtime";
+var DropArea = styled68.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2773,26 +3000,26 @@ var DropArea = styled66.div`
   cursor: ${({ $disabled }) => $disabled ? "not-allowed" : "pointer"};
   transition: all 0.15s ease;
 
-  ${({ $disabled, theme }) => !$disabled && css21`
+  ${({ $disabled, theme }) => !$disabled && css22`
       &:hover {
         border-color: ${theme.colors.primary.base};
         background-color: ${theme.colors.background.surfaceHover};
       }
     `}
 
-  ${({ $disabled }) => $disabled && css21`
+  ${({ $disabled }) => $disabled && css22`
       opacity: 0.6;
     `}
 `;
-var HiddenInput = styled66.input`
+var HiddenInput = styled68.input`
   display: none;
 `;
-var MainText = styled66.span`
+var MainText = styled68.span`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   font-weight: ${({ theme }) => theme.typography.weights.medium};
   color: ${({ theme }) => theme.colors.text.heading};
 `;
-var SubText = styled66.span`
+var SubText = styled68.span`
   font-size: ${({ theme }) => theme.typography.sizes.xs};
   color: ${({ theme }) => theme.colors.text.muted};
 `;
@@ -2827,9 +3054,9 @@ var FileDropzone = ({
     }
   };
   const displayedError = error || localError;
-  return /* @__PURE__ */ jsxs22("div", { ...rest, children: [
-    label && /* @__PURE__ */ jsx37(Label, { children: label }),
-    /* @__PURE__ */ jsxs22(
+  return /* @__PURE__ */ jsxs24("div", { ...rest, children: [
+    label && /* @__PURE__ */ jsx39(Label, { children: label }),
+    /* @__PURE__ */ jsxs24(
       DropArea,
       {
         $isDragging: isDragging,
@@ -2847,7 +3074,7 @@ var FileDropzone = ({
           handleFiles(e.dataTransfer.files);
         },
         children: [
-          /* @__PURE__ */ jsx37(
+          /* @__PURE__ */ jsx39(
             HiddenInput,
             {
               ref: inputRef,
@@ -2862,9 +3089,9 @@ var FileDropzone = ({
               }
             }
           ),
-          /* @__PURE__ */ jsx37(Icon9, { name: "cloud-upload-outline", size: 32 }),
-          /* @__PURE__ */ jsx37(MainText, { children: "Glissez-d\xE9posez vos fichiers ici ou cliquez pour parcourir" }),
-          /* @__PURE__ */ jsxs22(SubText, { children: [
+          /* @__PURE__ */ jsx39(Icon9, { name: "cloud-upload-outline", size: 32 }),
+          /* @__PURE__ */ jsx39(MainText, { children: "Glissez-d\xE9posez vos fichiers ici ou cliquez pour parcourir" }),
+          /* @__PURE__ */ jsxs24(SubText, { children: [
             "Taille maximale : ",
             maxSizeMb,
             " Mo"
@@ -2872,16 +3099,16 @@ var FileDropzone = ({
         ]
       }
     ),
-    displayedError && /* @__PURE__ */ jsx37(HelperText, { $state: "invalid", children: displayedError }),
-    !displayedError && hint && /* @__PURE__ */ jsx37(HelperText, { children: hint })
+    displayedError && /* @__PURE__ */ jsx39(HelperText, { $state: "invalid", children: displayedError }),
+    !displayedError && hint && /* @__PURE__ */ jsx39(HelperText, { children: hint })
   ] });
 };
 
 // src/ui/components/Forms/InputGroup/InputGroup.tsx
 import "react";
-import { styled as styled67 } from "styled-components";
-import { jsx as jsx38, jsxs as jsxs23 } from "react/jsx-runtime";
-var GroupWrapper = styled67.div`
+import { styled as styled69 } from "styled-components";
+import { jsx as jsx40, jsxs as jsxs25 } from "react/jsx-runtime";
+var GroupWrapper = styled69.div`
   display: flex;
   align-items: stretch;
   width: 100%;
@@ -2906,7 +3133,7 @@ var GroupWrapper = styled67.div`
     }
   }
 `;
-var InputAddon = styled67.span`
+var InputAddon = styled69.span`
   display: inline-flex;
   align-items: center;
   padding: 0 ${({ theme }) => theme.spacing[3]};
@@ -2917,23 +3144,23 @@ var InputAddon = styled67.span`
   user-select: none;
 `;
 var InputGroup = ({ leftAddon, rightAddon, children, ...rest }) => {
-  return /* @__PURE__ */ jsxs23(GroupWrapper, { ...rest, children: [
-    leftAddon && /* @__PURE__ */ jsx38(InputAddon, { children: leftAddon }),
+  return /* @__PURE__ */ jsxs25(GroupWrapper, { ...rest, children: [
+    leftAddon && /* @__PURE__ */ jsx40(InputAddon, { children: leftAddon }),
     children,
-    rightAddon && /* @__PURE__ */ jsx38(InputAddon, { children: rightAddon })
+    rightAddon && /* @__PURE__ */ jsx40(InputAddon, { children: rightAddon })
   ] });
 };
 
 // src/ui/components/Forms/MarkdownEditor/MarkdownEditor.tsx
 import { useMarkdownEditor } from "core-react";
-import { Fragment as Fragment4, useId as useId7 } from "react";
-import { styled as styled68 } from "styled-components";
+import { Fragment as Fragment4, useId as useId9 } from "react";
+import { styled as styled70 } from "styled-components";
 import { Icon as Icon10 } from "core-react/icons";
-import { jsx as jsx39, jsxs as jsxs24 } from "react/jsx-runtime";
-var Field = styled68.div`
+import { jsx as jsx41, jsxs as jsxs26 } from "react/jsx-runtime";
+var Field = styled70.div`
   margin-bottom: ${({ theme }) => theme.spacing[3]};
 `;
-var Root = styled68.div`
+var Root = styled70.div`
   overflow: hidden;
   background-color: ${({ theme }) => theme.colors.background.surface};
   border: 1px solid
@@ -2945,7 +3172,7 @@ var Root = styled68.div`
     box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary.subtle};
   }
 `;
-var Toolbar = styled68.div`
+var Toolbar = styled70.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -2955,13 +3182,13 @@ var Toolbar = styled68.div`
   background-color: ${({ theme }) => theme.colors.background.surfaceHover};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.default};
 `;
-var Modes = styled68.div`
+var Modes = styled70.div`
   display: inline-flex;
   padding: 2px;
   background-color: ${({ theme }) => theme.colors.background.surfaceActive};
   border-radius: ${({ theme }) => theme.radii.md};
 `;
-var ModeButton = styled68.button`
+var ModeButton = styled70.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1]};
@@ -2975,13 +3202,13 @@ var ModeButton = styled68.button`
   border-radius: ${({ theme }) => theme.radii.base};
   cursor: pointer;
 `;
-var FormatButtons = styled68.div`
+var FormatButtons = styled70.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 2px;
 `;
-var FormatButton = styled68.button`
+var FormatButton = styled70.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3010,13 +3237,13 @@ var FormatButton = styled68.button`
     opacity: 0.5;
   }
 `;
-var Separator = styled68.span`
+var Separator = styled70.span`
   width: 1px;
   height: 18px;
   margin: 0 ${({ theme }) => theme.spacing[1]};
   background-color: ${({ theme }) => theme.colors.border.hover};
 `;
-var Input2 = styled68.textarea`
+var Input2 = styled70.textarea`
   display: block;
   width: 100%;
   padding: ${({ theme }) => theme.spacing[3]};
@@ -3033,11 +3260,11 @@ var Input2 = styled68.textarea`
     display: none;
   }
 `;
-var Preview = styled68.div`
+var Preview = styled70.div`
   padding: ${({ theme }) => theme.spacing[3]};
   color: ${({ theme }) => theme.colors.text.body};
 `;
-var Empty = styled68.em`
+var Empty = styled70.em`
   color: ${({ theme }) => theme.colors.text.muted};
 `;
 var ACTIONS = {
@@ -3084,15 +3311,15 @@ var MarkdownEditor = ({
   actions = ALL_ACTIONS,
   "aria-label": ariaLabel
 }) => {
-  const id = useId7();
+  const id = useId9();
   const { textareaRef, mode, setMode, applyAction, onKeyDown, previewMinHeight } = useMarkdownEditor();
   const isPreview = mode === "preview";
-  return /* @__PURE__ */ jsxs24(Field, { children: [
-    label && /* @__PURE__ */ jsx39(Label, { htmlFor: id, $required: required, children: label }),
-    /* @__PURE__ */ jsxs24(Root, { $invalid: Boolean(error), children: [
-      /* @__PURE__ */ jsxs24(Toolbar, { children: [
-        /* @__PURE__ */ jsxs24(Modes, { role: "radiogroup", "aria-label": "Mode de l'\xE9diteur", children: [
-          /* @__PURE__ */ jsxs24(
+  return /* @__PURE__ */ jsxs26(Field, { children: [
+    label && /* @__PURE__ */ jsx41(Label, { htmlFor: id, $required: required, children: label }),
+    /* @__PURE__ */ jsxs26(Root, { $invalid: Boolean(error), children: [
+      /* @__PURE__ */ jsxs26(Toolbar, { children: [
+        /* @__PURE__ */ jsxs26(Modes, { role: "radiogroup", "aria-label": "Mode de l'\xE9diteur", children: [
+          /* @__PURE__ */ jsxs26(
             ModeButton,
             {
               type: "button",
@@ -3101,12 +3328,12 @@ var MarkdownEditor = ({
               $active: !isPreview,
               onClick: () => setMode("write"),
               children: [
-                /* @__PURE__ */ jsx39(Icon10, { name: "pencil", size: 12 }),
+                /* @__PURE__ */ jsx41(Icon10, { name: "pencil", size: 12 }),
                 " \xC9crire"
               ]
             }
           ),
-          /* @__PURE__ */ jsxs24(
+          /* @__PURE__ */ jsxs26(
             ModeButton,
             {
               type: "button",
@@ -3115,14 +3342,14 @@ var MarkdownEditor = ({
               $active: isPreview,
               onClick: () => setMode("preview"),
               children: [
-                /* @__PURE__ */ jsx39(Icon10, { name: "eye", size: 12 }),
+                /* @__PURE__ */ jsx41(Icon10, { name: "eye", size: 12 }),
                 " Aper\xE7u"
               ]
             }
           )
         ] }),
-        /* @__PURE__ */ jsx39(FormatButtons, { role: "toolbar", "aria-label": "Mise en forme", children: actions.map(
-          (action, index) => action === "separator" ? /* @__PURE__ */ jsx39(Separator, { "aria-hidden": "true" }, `separator-${index}`) : /* @__PURE__ */ jsx39(Fragment4, { children: /* @__PURE__ */ jsx39(
+        /* @__PURE__ */ jsx41(FormatButtons, { role: "toolbar", "aria-label": "Mise en forme", children: actions.map(
+          (action, index) => action === "separator" ? /* @__PURE__ */ jsx41(Separator, { "aria-hidden": "true" }, `separator-${index}`) : /* @__PURE__ */ jsx41(Fragment4, { children: /* @__PURE__ */ jsx41(
             FormatButton,
             {
               type: "button",
@@ -3130,12 +3357,12 @@ var MarkdownEditor = ({
               "aria-label": ACTIONS[action].label,
               disabled: isPreview,
               onClick: () => applyAction(action),
-              children: /* @__PURE__ */ jsx39(Icon10, { name: ACTIONS[action].icon, size: 15 })
+              children: /* @__PURE__ */ jsx41(Icon10, { name: ACTIONS[action].icon, size: 15 })
             }
           ) }, action)
         ) })
       ] }),
-      /* @__PURE__ */ jsx39(
+      /* @__PURE__ */ jsx41(
         Input2,
         {
           id,
@@ -3153,18 +3380,18 @@ var MarkdownEditor = ({
           onKeyDown
         }
       ),
-      isPreview && /* @__PURE__ */ jsx39(Preview, { style: { minHeight: previewMinHeight }, children: value.trim() ? /* @__PURE__ */ jsx39(MarkdownViewer, { breaks: true, children: value }) : /* @__PURE__ */ jsx39(Empty, { children: "Rien \xE0 pr\xE9visualiser." }) })
+      isPreview && /* @__PURE__ */ jsx41(Preview, { style: { minHeight: previewMinHeight }, children: value.trim() ? /* @__PURE__ */ jsx41(MarkdownViewer, { breaks: true, children: value }) : /* @__PURE__ */ jsx41(Empty, { children: "Rien \xE0 pr\xE9visualiser." }) })
     ] }),
-    (error || hint) && /* @__PURE__ */ jsx39(HelperText, { $state: error ? "invalid" : void 0, children: error ?? hint })
+    (error || hint) && /* @__PURE__ */ jsx41(HelperText, { $state: error ? "invalid" : void 0, children: error ?? hint })
   ] });
 };
 
 // src/ui/components/Forms/TagInput/TagInput.tsx
 import { Icon as Icon11 } from "core-react/icons";
 import { useState as useState5 } from "react";
-import { styled as styled69, useTheme as useTheme2 } from "styled-components";
-import { jsx as jsx40, jsxs as jsxs25 } from "react/jsx-runtime";
-var InputBox = styled69.div`
+import { styled as styled71, useTheme as useTheme2 } from "styled-components";
+import { jsx as jsx42, jsxs as jsxs27 } from "react/jsx-runtime";
+var InputBox = styled71.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3181,7 +3408,7 @@ var InputBox = styled69.div`
     box-shadow: 0 0 0 3px ${({ theme }) => theme.borders.focusRing.color};
   }
 `;
-var BareInput = styled69.input`
+var BareInput = styled71.input`
   flex: 1;
   min-width: 120px;
   border: none;
@@ -3191,7 +3418,7 @@ var BareInput = styled69.input`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   color: ${({ theme }) => theme.colors.text.body};
 `;
-var RemoveBtn = styled69.button`
+var RemoveBtn = styled71.button`
   display: inline-flex;
   border: none;
   background: transparent;
@@ -3203,7 +3430,7 @@ var RemoveBtn = styled69.button`
     opacity: 1;
   }
 `;
-var SuggestionsList = styled69.ul`
+var SuggestionsList = styled71.ul`
   margin: ${({ theme }) => theme.spacing[1]} 0 0 0;
   padding: ${({ theme }) => theme.spacing[1]};
   list-style: none;
@@ -3214,7 +3441,7 @@ var SuggestionsList = styled69.ul`
   max-height: 160px;
   overflow-y: auto;
 `;
-var SuggestionItem = styled69.li`
+var SuggestionItem = styled71.li`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
@@ -3226,7 +3453,7 @@ var SuggestionItem = styled69.li`
     background-color: ${({ theme }) => theme.colors.background.surfaceHover};
   }
 `;
-var ColorDot = styled69.span`
+var ColorDot = styled71.span`
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -3275,14 +3502,14 @@ var TagInput = ({
       }
     }
   };
-  return /* @__PURE__ */ jsxs25("div", { ...rest, children: [
-    label && /* @__PURE__ */ jsx40(Label, { children: label }),
-    /* @__PURE__ */ jsxs25(InputBox, { $hasError: Boolean(error), children: [
-      value.map((tag) => /* @__PURE__ */ jsxs25(Badge, { $pill: true, $color: tag.color, $variant: "primary", children: [
+  return /* @__PURE__ */ jsxs27("div", { ...rest, children: [
+    label && /* @__PURE__ */ jsx42(Label, { children: label }),
+    /* @__PURE__ */ jsxs27(InputBox, { $hasError: Boolean(error), children: [
+      value.map((tag) => /* @__PURE__ */ jsxs27(Badge, { $pill: true, $color: tag.color, $variant: "primary", children: [
         tag.label,
-        /* @__PURE__ */ jsx40(RemoveBtn, { type: "button", onClick: () => removeTag(tag.id), "aria-label": `Retirer ${tag.label}`, children: /* @__PURE__ */ jsx40(Icon11, { name: "close", size: 12 }) })
+        /* @__PURE__ */ jsx42(RemoveBtn, { type: "button", onClick: () => removeTag(tag.id), "aria-label": `Retirer ${tag.label}`, children: /* @__PURE__ */ jsx42(Icon11, { name: "close", size: 12 }) })
       ] }, tag.id)),
-      /* @__PURE__ */ jsx40(
+      /* @__PURE__ */ jsx42(
         BareInput,
         {
           value: query,
@@ -3292,33 +3519,33 @@ var TagInput = ({
         }
       )
     ] }),
-    query && availableSuggestions.length > 0 && /* @__PURE__ */ jsx40(SuggestionsList, { children: availableSuggestions.map((s) => /* @__PURE__ */ jsxs25(SuggestionItem, { onClick: () => addTag(s), children: [
-      s.color && /* @__PURE__ */ jsx40(ColorDot, { $color: s.color }),
-      /* @__PURE__ */ jsx40("span", { children: s.label })
+    query && availableSuggestions.length > 0 && /* @__PURE__ */ jsx42(SuggestionsList, { children: availableSuggestions.map((s) => /* @__PURE__ */ jsxs27(SuggestionItem, { onClick: () => addTag(s), children: [
+      s.color && /* @__PURE__ */ jsx42(ColorDot, { $color: s.color }),
+      /* @__PURE__ */ jsx42("span", { children: s.label })
     ] }, s.id)) }),
-    error && /* @__PURE__ */ jsx40(HelperText, { $state: "invalid", children: error }),
-    !error && hint && /* @__PURE__ */ jsx40(HelperText, { children: hint })
+    error && /* @__PURE__ */ jsx42(HelperText, { $state: "invalid", children: error }),
+    !error && hint && /* @__PURE__ */ jsx42(HelperText, { children: hint })
   ] });
 };
 
 // src/ui/components/Grid/Col.tsx
-import { styled as styled70, css as css22 } from "styled-components";
+import { styled as styled72, css as css23 } from "styled-components";
 var computeWidth = (span) => {
   if (!span) return "";
   if (span === "auto") {
-    return css22`
+    return css23`
       flex: 1 0 0%;
       width: auto;
       max-width: 100%;
     `;
   }
   const pct = `${span / 12 * 100}%`;
-  return css22`
+  return css23`
     flex: 0 0 auto;
     width: ${pct};
   `;
 };
-var Col = styled70.div.attrs((props) => ({
+var Col = styled72.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   box-sizing: border-box;
@@ -3326,29 +3553,29 @@ var Col = styled70.div.attrs((props) => ({
   width: 100%;
 
   ${({ $span }) => computeWidth($span)}
-  ${({ $offset }) => $offset && css22`
+  ${({ $offset }) => $offset && css23`
       margin-left: ${$offset / 12 * 100}%;
     `}
 
-  ${({ $sm, theme }) => $sm && css22`
+  ${({ $sm, theme }) => $sm && css23`
       ${theme.media.up("sm")} {
         ${computeWidth($sm)}
       }
     `}
 
-  ${({ $md, theme }) => $md && css22`
+  ${({ $md, theme }) => $md && css23`
       ${theme.media.up("md")} {
         ${computeWidth($md)}
       }
     `}
 
-  ${({ $lg, theme }) => $lg && css22`
+  ${({ $lg, theme }) => $lg && css23`
       ${theme.media.up("lg")} {
         ${computeWidth($lg)}
       }
     `}
 
-  ${({ $xl, theme }) => $xl && css22`
+  ${({ $xl, theme }) => $xl && css23`
       ${theme.media.up("xl")} {
         ${computeWidth($xl)}
       }
@@ -3356,8 +3583,8 @@ var Col = styled70.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Columns.tsx
-import { styled as styled71 } from "styled-components";
-var Columns = styled71.div.attrs((props) => ({
+import { styled as styled73 } from "styled-components";
+var Columns = styled73.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   columns: ${({ $count, $width }) => {
@@ -3377,8 +3604,8 @@ var Columns = styled71.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Container.tsx
-import { styled as styled72, css as css23 } from "styled-components";
-var Container3 = styled72.div.attrs((props) => ({
+import { styled as styled74, css as css24 } from "styled-components";
+var Container3 = styled74.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   width: 100%;
@@ -3387,7 +3614,7 @@ var Container3 = styled72.div.attrs((props) => ({
   padding-right: ${({ theme }) => theme.spacing[4]};
   padding-left: ${({ theme }) => theme.spacing[4]};
 
-  ${({ $fluid, theme }) => !$fluid && css23`
+  ${({ $fluid, theme }) => !$fluid && css24`
       ${theme.media.up("sm")} {
         max-width: 540px;
       }
@@ -3407,8 +3634,8 @@ var Container3 = styled72.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Flex.tsx
-import { styled as styled73 } from "styled-components";
-var Flex = styled73.div.attrs((props) => ({
+import { styled as styled75 } from "styled-components";
+var Flex = styled75.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   display: ${({ $inline }) => $inline ? "inline-flex" : "flex"};
@@ -3420,8 +3647,8 @@ var Flex = styled73.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Grid.tsx
-import { styled as styled74 } from "styled-components";
-var Grid = styled74.div.attrs((props) => ({
+import { styled as styled76 } from "styled-components";
+var Grid = styled76.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   display: grid;
@@ -3435,8 +3662,8 @@ var Grid = styled74.div.attrs((props) => ({
 `;
 
 // src/ui/components/Grid/Row.tsx
-import { styled as styled75 } from "styled-components";
-var Row = styled75.div.attrs((props) => ({
+import { styled as styled77 } from "styled-components";
+var Row = styled77.div.attrs((props) => ({
   as: props.as || "div"
 }))`
   display: flex;
@@ -3454,9 +3681,9 @@ var Row = styled75.div.attrs((props) => ({
 import { Icon as Icon12 } from "core-react/icons";
 import "react";
 import { useUI as useUI3 } from "core-react";
-import { styled as styled76 } from "styled-components";
-import { jsx as jsx41, jsxs as jsxs26 } from "react/jsx-runtime";
-var StyledBackButton = styled76.button`
+import { styled as styled78 } from "styled-components";
+import { jsx as jsx43, jsxs as jsxs28 } from "react/jsx-runtime";
+var StyledBackButton = styled78.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1.5]};
@@ -3496,28 +3723,28 @@ var BackButton = ({ label = "Retour", fallbackUrl, onClick, ...rest }) => {
       router.push(fallbackUrl);
     }
   };
-  return /* @__PURE__ */ jsxs26(StyledBackButton, { type: "button", onClick: handleClick, ...rest, children: [
-    /* @__PURE__ */ jsx41(Icon12, { name: "arrow-left", size: 18 }),
-    label && /* @__PURE__ */ jsx41("span", { children: label })
+  return /* @__PURE__ */ jsxs28(StyledBackButton, { type: "button", onClick: handleClick, ...rest, children: [
+    /* @__PURE__ */ jsx43(Icon12, { name: "arrow-left", size: 18 }),
+    label && /* @__PURE__ */ jsx43("span", { children: label })
   ] });
 };
 
 // src/ui/components/Navigation/Breadcrumb/Breadcrumb.tsx
 import { Icon as Icon14 } from "core-react/icons";
 import React15 from "react";
-import { styled as styled79 } from "styled-components";
+import { styled as styled81 } from "styled-components";
 
 // src/ui/components/Navigation/Breadcrumb/BreadcrumbContainer.tsx
 import "react";
-import { styled as styled77 } from "styled-components";
-import { jsx as jsx42 } from "react/jsx-runtime";
-var Nav = styled77.nav`
+import { styled as styled79 } from "styled-components";
+import { jsx as jsx44 } from "react/jsx-runtime";
+var Nav = styled79.nav`
   display: flex;
   align-items: center;
   width: 100%;
   margin-bottom: ${({ theme }) => theme.spacing?.[2] || "8px"};
 `;
-var OrderedList = styled77.ol`
+var OrderedList = styled79.ol`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3526,22 +3753,22 @@ var OrderedList = styled77.ol`
   margin: 0;
   padding: 0;
 `;
-var BreadcrumbContainer = ({ children, ...props }) => /* @__PURE__ */ jsx42(Nav, { "aria-label": "Fil d'Ariane", ...props, children: /* @__PURE__ */ jsx42(OrderedList, { children }) });
+var BreadcrumbContainer = ({ children, ...props }) => /* @__PURE__ */ jsx44(Nav, { "aria-label": "Fil d'Ariane", ...props, children: /* @__PURE__ */ jsx44(OrderedList, { children }) });
 
 // src/ui/components/Navigation/Breadcrumb/BreadcrumbItem.tsx
 import { Icon as Icon13 } from "core-react/icons";
 import "react";
-import { styled as styled78, css as css24 } from "styled-components";
+import { styled as styled80, css as css25 } from "styled-components";
 import { useLinkProps as useLinkProps4 } from "core-react";
-import { Fragment as Fragment5, jsx as jsx43, jsxs as jsxs27 } from "react/jsx-runtime";
-var ItemLi = styled78.li`
+import { Fragment as Fragment5, jsx as jsx45, jsxs as jsxs29 } from "react/jsx-runtime";
+var ItemLi = styled80.li`
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
   line-height: 1.4;
 `;
-var interactiveStyles = css24`
+var interactiveStyles = css25`
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -3560,10 +3787,10 @@ var interactiveStyles = css24`
     background-color: ${({ theme }) => theme.colors.background.surfaceHover || "rgba(0, 0, 0, 0.04)"};
   }
 `;
-var StyledLink = styled78.a`
+var StyledLink = styled80.a`
   ${interactiveStyles}
 `;
-var StyledButton = styled78.button`
+var StyledButton = styled80.button`
   ${interactiveStyles}
   border: none;
   background: none;
@@ -3571,7 +3798,7 @@ var StyledButton = styled78.button`
   font-family: inherit;
   font-size: inherit;
 `;
-var ActiveSpan = styled78.span`
+var ActiveSpan = styled80.span`
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -3590,16 +3817,16 @@ var BreadcrumbItem = ({
   active = false
 }) => {
   const linkProps = useLinkProps4(to);
-  const content = /* @__PURE__ */ jsxs27(Fragment5, { children: [
-    icon && /* @__PURE__ */ jsx43(Icon13, { name: icon, size: 15 }),
-    /* @__PURE__ */ jsx43("span", { children })
+  const content = /* @__PURE__ */ jsxs29(Fragment5, { children: [
+    icon && /* @__PURE__ */ jsx45(Icon13, { name: icon, size: 15 }),
+    /* @__PURE__ */ jsx45("span", { children })
   ] });
-  return /* @__PURE__ */ jsx43(ItemLi, { children: active ? /* @__PURE__ */ jsx43(ActiveSpan, { "aria-current": "page", children: content }) : to ? /* @__PURE__ */ jsx43(StyledLink, { ...linkProps, children: content }) : onClick ? /* @__PURE__ */ jsx43(StyledButton, { type: "button", onClick, children: content }) : /* @__PURE__ */ jsx43(ActiveSpan, { children: content }) });
+  return /* @__PURE__ */ jsx45(ItemLi, { children: active ? /* @__PURE__ */ jsx45(ActiveSpan, { "aria-current": "page", children: content }) : to ? /* @__PURE__ */ jsx45(StyledLink, { ...linkProps, children: content }) : onClick ? /* @__PURE__ */ jsx45(StyledButton, { type: "button", onClick, children: content }) : /* @__PURE__ */ jsx45(ActiveSpan, { children: content }) });
 };
 
 // src/ui/components/Navigation/Breadcrumb/Breadcrumb.tsx
-import { jsx as jsx44, jsxs as jsxs28 } from "react/jsx-runtime";
-var Separator2 = styled79.li`
+import { jsx as jsx46, jsxs as jsxs30 } from "react/jsx-runtime";
+var Separator2 = styled81.li`
   display: inline-flex;
   align-items: center;
   color: ${({ theme }) => theme.colors.text.muted};
@@ -3614,7 +3841,7 @@ var Breadcrumb = ({
 }) => {
   const elements = items ? items.map((item, idx) => {
     const isLast = idx === items.length - 1;
-    return /* @__PURE__ */ jsx44(
+    return /* @__PURE__ */ jsx46(
       BreadcrumbItem,
       {
         to: item.to,
@@ -3626,15 +3853,15 @@ var Breadcrumb = ({
       idx
     );
   }) : React15.Children.toArray(children);
-  return /* @__PURE__ */ jsx44(BreadcrumbContainer, { className, children: elements.map((el, index) => /* @__PURE__ */ jsxs28(React15.Fragment, { children: [
-    index > 0 && /* @__PURE__ */ jsx44(Separator2, { "aria-hidden": "true", children: /* @__PURE__ */ jsx44(Icon14, { name: separatorIcon, size: 15 }) }),
+  return /* @__PURE__ */ jsx46(BreadcrumbContainer, { className, children: elements.map((el, index) => /* @__PURE__ */ jsxs30(React15.Fragment, { children: [
+    index > 0 && /* @__PURE__ */ jsx46(Separator2, { "aria-hidden": "true", children: /* @__PURE__ */ jsx46(Icon14, { name: separatorIcon, size: 15 }) }),
     el
   ] }, index)) });
 };
 
 // src/ui/components/Navigation/Dropdown/Dropdown.tsx
 import { useEffect as useEffect4, useRef as useRef3, useState as useState6 } from "react";
-import { styled as styled82 } from "styled-components";
+import { styled as styled84 } from "styled-components";
 
 // src/ui/components/Navigation/Dropdown/DropdownContext.tsx
 import { createContext as createContext3, useContext as useContext3 } from "react";
@@ -3649,9 +3876,9 @@ var useGenericDropdown = () => {
 
 // src/ui/components/Navigation/Dropdown/DropdownItem.tsx
 import "react";
-import { styled as styled80, css as css25 } from "styled-components";
-import { jsx as jsx45, jsxs as jsxs29 } from "react/jsx-runtime";
-var StyledItem = styled80.button`
+import { styled as styled82, css as css26 } from "styled-components";
+import { jsx as jsx47, jsxs as jsxs31 } from "react/jsx-runtime";
+var StyledItem = styled82.button`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
@@ -3668,13 +3895,13 @@ var StyledItem = styled80.button`
     background-color 0.15s ease,
     color 0.15s ease;
 
-  ${({ $variant, theme }) => $variant === "danger" ? css25`
+  ${({ $variant, theme }) => $variant === "danger" ? css26`
           color: ${theme.colors.danger.base};
           &:hover:not(:disabled) {
             background-color: ${theme.colors.danger.subtle};
             color: ${theme.colors.danger.dark};
           }
-        ` : css25`
+        ` : css26`
           color: ${theme.colors.text.body};
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
@@ -3687,7 +3914,7 @@ var StyledItem = styled80.button`
     cursor: not-allowed;
   }
 `;
-var DropdownDivider = styled80.li`
+var DropdownDivider = styled82.li`
   height: 1px;
   margin: ${({ theme }) => `${theme.spacing[1]} 0`};
   background-color: ${({ theme }) => theme.colors.border.default};
@@ -3700,7 +3927,7 @@ var DropdownItem = ({
   ...rest
 }) => {
   const { close } = useGenericDropdown();
-  return /* @__PURE__ */ jsx45("li", { role: "none", children: /* @__PURE__ */ jsxs29(
+  return /* @__PURE__ */ jsx47("li", { role: "none", children: /* @__PURE__ */ jsxs31(
     StyledItem,
     {
       type: "button",
@@ -3713,16 +3940,16 @@ var DropdownItem = ({
       ...rest,
       children: [
         icon,
-        /* @__PURE__ */ jsx45("span", { children })
+        /* @__PURE__ */ jsx47("span", { children })
       ]
     }
   ) });
 };
 
 // src/ui/components/Navigation/Dropdown/DropdownMenu.tsx
-import { styled as styled81 } from "styled-components";
-import { jsx as jsx46 } from "react/jsx-runtime";
-var MenuList = styled81.ul`
+import { styled as styled83 } from "styled-components";
+import { jsx as jsx48 } from "react/jsx-runtime";
+var MenuList = styled83.ul`
   position: absolute;
   top: calc(100% + ${({ theme }) => theme.spacing[1]});
   ${({ $align }) => $align === "right" ? "right: 0;" : "left: 0;"}
@@ -3745,22 +3972,22 @@ var DropdownMenu = ({
   ...rest
 }) => {
   const { isOpen } = useGenericDropdown();
-  return /* @__PURE__ */ jsx46(MenuList, { $isOpen: isOpen, $align: align, $minWidth: minWidth, role: "menu", ...rest, children });
+  return /* @__PURE__ */ jsx48(MenuList, { $isOpen: isOpen, $align: align, $minWidth: minWidth, role: "menu", ...rest, children });
 };
 
 // src/ui/components/Navigation/Dropdown/Dropdown.tsx
-import { jsx as jsx47 } from "react/jsx-runtime";
-var Wrapper2 = styled82.div`
+import { jsx as jsx49 } from "react/jsx-runtime";
+var Wrapper3 = styled84.div`
   position: relative;
   display: inline-flex;
 `;
-var TriggerButton = styled82.div`
+var TriggerButton = styled84.div`
   display: inline-flex;
   cursor: pointer;
 `;
 var DropdownTrigger = ({ children, onClick, ...rest }) => {
   const { isOpen, toggle } = useGenericDropdown();
-  return /* @__PURE__ */ jsx47(
+  return /* @__PURE__ */ jsx49(
     TriggerButton,
     {
       onClick: (e) => {
@@ -3794,7 +4021,7 @@ var DropdownRoot = ({ children, ...rest }) => {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen]);
-  return /* @__PURE__ */ jsx47(GenericDropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ jsx47(Wrapper2, { ref, ...rest, children }) });
+  return /* @__PURE__ */ jsx49(GenericDropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ jsx49(Wrapper3, { ref, ...rest, children }) });
 };
 var Dropdown = Object.assign(DropdownRoot, {
   Trigger: DropdownTrigger,
@@ -3805,7 +4032,7 @@ var Dropdown = Object.assign(DropdownRoot, {
 
 // src/ui/components/Navigation/Navbar/Navbar.tsx
 import { useState as useState7 } from "react";
-import { styled as styled83, css as css26 } from "styled-components";
+import { styled as styled85, css as css27 } from "styled-components";
 
 // src/ui/components/Navigation/Navbar/NavbarContext.tsx
 import { createContext as createContext4, useContext as useContext4 } from "react";
@@ -3819,8 +4046,8 @@ var useNavbar = () => {
 };
 
 // src/ui/components/Navigation/Navbar/Navbar.tsx
-import { jsx as jsx48 } from "react/jsx-runtime";
-var StyledNav = styled83.nav`
+import { jsx as jsx50 } from "react/jsx-runtime";
+var StyledNav = styled85.nav`
   position: relative;
   display: flex;
   flex-wrap: wrap;
@@ -3833,7 +4060,7 @@ var StyledNav = styled83.nav`
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.default};
   box-sizing: border-box;
 
-  ${({ $sticky }) => $sticky && css26`
+  ${({ $sticky }) => $sticky && css27`
       position: sticky;
       top: 0;
       z-index: 100;
@@ -3859,12 +4086,12 @@ var Navbar = ({
     if (!isControlled) setInternalIsOpen(false);
     onToggle?.(false);
   };
-  return /* @__PURE__ */ jsx48(NavbarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children: /* @__PURE__ */ jsx48(StyledNav, { $sticky: sticky, ...props, children }) });
+  return /* @__PURE__ */ jsx50(NavbarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children: /* @__PURE__ */ jsx50(StyledNav, { $sticky: sticky, ...props, children }) });
 };
 
 // src/ui/components/Navigation/Navbar/NavbarBrand.tsx
-import { styled as styled84 } from "styled-components";
-var NavbarBrand = styled84.div`
+import { styled as styled86 } from "styled-components";
+var NavbarBrand = styled86.div`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
@@ -3877,15 +4104,15 @@ var NavbarBrand = styled84.div`
 
 // src/ui/components/Navigation/Navbar/NavbarCollapse.tsx
 import "react";
-import { styled as styled85, css as css27 } from "styled-components";
-import { jsx as jsx49 } from "react/jsx-runtime";
-var CollapseWrapper = styled85.div`
+import { styled as styled87, css as css28 } from "styled-components";
+import { jsx as jsx51 } from "react/jsx-runtime";
+var CollapseWrapper = styled87.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex: 1;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css27`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css28`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: ${$isOpen ? "flex" : "none"};
         flex-direction: column;
@@ -3903,13 +4130,13 @@ var NavbarCollapse = ({
   ...props
 }) => {
   const { isOpen, breakpoint } = useNavbar();
-  return /* @__PURE__ */ jsx49(CollapseWrapper, { $isOpen: isOpen, $breakpoint: breakpoint, ...props, children });
+  return /* @__PURE__ */ jsx51(CollapseWrapper, { $isOpen: isOpen, $breakpoint: breakpoint, ...props, children });
 };
 
 // src/ui/components/Navigation/Navbar/NavbarDropdown.tsx
 import { useLinkProps as useLinkProps5 } from "core-react";
 import { useEffect as useEffect5, useRef as useRef4, useState as useState8 } from "react";
-import { styled as styled86, css as css28 } from "styled-components";
+import { styled as styled88, css as css29 } from "styled-components";
 
 // src/ui/components/Navigation/Navbar/NavbarDropdownContext.tsx
 import { createContext as createContext5, useContext as useContext5 } from "react";
@@ -3921,12 +4148,12 @@ var useDropdown = () => {
 };
 
 // src/ui/components/Navigation/Navbar/NavbarDropdown.tsx
-import { jsx as jsx50 } from "react/jsx-runtime";
-var DropdownContainer = styled86.div`
+import { jsx as jsx52 } from "react/jsx-runtime";
+var DropdownContainer = styled88.div`
   position: relative;
   display: inline-flex;
 `;
-var DropdownToggleBtn = styled86.button`
+var DropdownToggleBtn = styled88.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1.5]};
@@ -3946,7 +4173,7 @@ var DropdownToggleBtn = styled86.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 `;
-var MenuWrapper = styled86.ul`
+var MenuWrapper = styled88.ul`
   position: absolute;
   top: calc(100% + ${({ theme }) => theme.spacing[1.5]});
   ${({ $align }) => $align === "right" ? "right: 0;" : "left: 0;"};
@@ -3964,14 +4191,14 @@ var MenuWrapper = styled86.ul`
   box-shadow: ${({ theme }) => theme.shadows.md};
   box-sizing: border-box;
 `;
-var HeaderLi = styled86.li`
+var HeaderLi = styled88.li`
   padding: ${({ theme }) => `${theme.spacing[2]}${theme.spacing[3]}`};
   margin-bottom: ${({ theme }) => theme.spacing[1]};
 `;
-var ItemLi2 = styled86.li`
+var ItemLi2 = styled88.li`
   width: 100%;
 `;
-var ItemBtn = styled86.button`
+var ItemBtn = styled88.button`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3995,12 +4222,12 @@ var ItemBtn = styled86.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $active, theme }) => $active && css28`
+  ${({ $active, theme }) => $active && css29`
       background-color: ${theme.colors.primary.subtle};
       color: ${theme.colors.primary.base};
     `}
 `;
-var DividerLi = styled86.li`
+var DividerLi = styled88.li`
   margin: ${({ theme }) => `${theme.spacing[1.5]} 0`};
   border: none;
   height: 1px;
@@ -4029,18 +4256,18 @@ var NavbarDropdown = ({ children }) => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);
-  return /* @__PURE__ */ jsx50(DropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ jsx50(DropdownContainer, { ref: containerRef, children }) });
+  return /* @__PURE__ */ jsx52(DropdownContext.Provider, { value: { isOpen, toggle, close }, children: /* @__PURE__ */ jsx52(DropdownContainer, { ref: containerRef, children }) });
 };
 var NavbarDropdownToggle = ({
   children,
   ...props
 }) => {
   const { isOpen, toggle } = useDropdown();
-  return /* @__PURE__ */ jsx50(DropdownToggleBtn, { type: "button", onClick: toggle, "aria-haspopup": "true", "aria-expanded": isOpen, ...props, children });
+  return /* @__PURE__ */ jsx52(DropdownToggleBtn, { type: "button", onClick: toggle, "aria-haspopup": "true", "aria-expanded": isOpen, ...props, children });
 };
 var NavbarDropdownMenu = ({ children, align = "right" }) => {
   const { isOpen } = useDropdown();
-  return /* @__PURE__ */ jsx50(MenuWrapper, { $isOpen: isOpen, $align: align, role: "menu", children });
+  return /* @__PURE__ */ jsx52(MenuWrapper, { $isOpen: isOpen, $align: align, role: "menu", children });
 };
 var NavbarDropdownItem = ({
   as,
@@ -4052,7 +4279,7 @@ var NavbarDropdownItem = ({
 }) => {
   const { close } = useDropdown();
   const linkProps = useLinkProps5(href, as);
-  return /* @__PURE__ */ jsx50(ItemLi2, { role: "none", children: /* @__PURE__ */ jsx50(
+  return /* @__PURE__ */ jsx52(ItemLi2, { role: "none", children: /* @__PURE__ */ jsx52(
     ItemBtn,
     {
       ...linkProps,
@@ -4067,21 +4294,21 @@ var NavbarDropdownItem = ({
     }
   ) });
 };
-var NavbarDropdownHeader = ({ children }) => /* @__PURE__ */ jsx50(HeaderLi, { role: "presentation", children });
-var NavbarDropdownDivider = () => /* @__PURE__ */ jsx50(DividerLi, { role: "separator" });
+var NavbarDropdownHeader = ({ children }) => /* @__PURE__ */ jsx52(HeaderLi, { role: "presentation", children });
+var NavbarDropdownDivider = () => /* @__PURE__ */ jsx52(DividerLi, { role: "separator" });
 
 // src/ui/components/Navigation/Navbar/NavbarItem.tsx
-import { styled as styled87 } from "styled-components";
-var NavbarItem = styled87.div`
+import { styled as styled89 } from "styled-components";
+var NavbarItem = styled89.div`
   display: flex;
   align-items: center;
 `;
 
 // src/ui/components/Navigation/Navbar/NavbarLink.tsx
 import { useLinkProps as useLinkProps6 } from "core-react";
-import { styled as styled88, css as css29 } from "styled-components";
-import { jsx as jsx51 } from "react/jsx-runtime";
-var NavbarLinkBase = styled88.button`
+import { styled as styled90, css as css30 } from "styled-components";
+import { jsx as jsx53 } from "react/jsx-runtime";
+var NavbarLinkBase = styled90.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1.5]};
@@ -4100,9 +4327,9 @@ var NavbarLinkBase = styled88.button`
 
   color: ${({ $active, theme }) => $active ? theme.colors.primary.base : theme.colors.text.body};
 
-  ${({ $active, theme }) => $active ? css29`
+  ${({ $active, theme }) => $active ? css30`
           background-color: ${theme.colors.primary.subtle};
-        ` : css29`
+        ` : css30`
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
             color: ${theme.colors.text.heading};
@@ -4114,11 +4341,11 @@ var NavbarLinkBase = styled88.button`
     cursor: not-allowed;
   }
 `;
-var NavbarLink = ({ href, as, ...props }) => /* @__PURE__ */ jsx51(NavbarLinkBase, { ...props, ...useLinkProps6(href, as) });
+var NavbarLink = ({ href, as, ...props }) => /* @__PURE__ */ jsx53(NavbarLinkBase, { ...props, ...useLinkProps6(href, as) });
 
 // src/ui/components/Navigation/Navbar/NavbarNav.tsx
-import { styled as styled89 } from "styled-components";
-var NavbarNav = styled89.ul`
+import { styled as styled91 } from "styled-components";
+var NavbarNav = styled91.ul`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1]};
@@ -4136,9 +4363,9 @@ var NavbarNav = styled89.ul`
 // src/ui/components/Navigation/Navbar/NavbarToggle.tsx
 import { Icon as Icon15 } from "core-react/icons";
 import "react";
-import { styled as styled90, css as css30 } from "styled-components";
-import { jsx as jsx52 } from "react/jsx-runtime";
-var ToggleButton = styled90.button`
+import { styled as styled92, css as css31 } from "styled-components";
+import { jsx as jsx54 } from "react/jsx-runtime";
+var ToggleButton = styled92.button`
   display: none;
   align-items: center;
   justify-content: center;
@@ -4155,7 +4382,7 @@ var ToggleButton = styled90.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $breakpoint, theme }) => $breakpoint && css30`
+  ${({ $breakpoint, theme }) => $breakpoint && css31`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: inline-flex;
       }
@@ -4163,7 +4390,7 @@ var ToggleButton = styled90.button`
 `;
 var NavbarToggle = ({ children, ...props }) => {
   const { isOpen, toggle, breakpoint } = useNavbar();
-  return /* @__PURE__ */ jsx52(
+  return /* @__PURE__ */ jsx54(
     ToggleButton,
     {
       type: "button",
@@ -4172,7 +4399,7 @@ var NavbarToggle = ({ children, ...props }) => {
       "aria-expanded": isOpen,
       "aria-label": "Basculer la navigation",
       ...props,
-      children: children ?? /* @__PURE__ */ jsx52(Icon15, { name: isOpen ? "close" : "menu", size: 20 })
+      children: children ?? /* @__PURE__ */ jsx54(Icon15, { name: isOpen ? "close" : "menu", size: 20 })
     }
   );
 };
@@ -4183,9 +4410,9 @@ import { useMemo as useMemo2 } from "react";
 
 // src/ui/components/Navigation/Pagination/PaginationButton.tsx
 import "react";
-import { styled as styled91, css as css31 } from "styled-components";
-import { jsx as jsx53 } from "react/jsx-runtime";
-var StyledButton2 = styled91.button`
+import { styled as styled93, css as css32 } from "styled-components";
+import { jsx as jsx55 } from "react/jsx-runtime";
+var StyledButton2 = styled93.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4209,7 +4436,7 @@ var StyledButton2 = styled91.button`
     background-color: ${({ theme }) => theme.colors.background.surfaceHover};
   }
 
-  ${({ $isActive, theme }) => $isActive && css31`
+  ${({ $isActive, theme }) => $isActive && css32`
       background-color: ${theme.colors.primary.base};
       border-color: ${theme.colors.primary.base};
       color: ${theme.colors.white};
@@ -4233,18 +4460,18 @@ var PaginationButton = ({
   children,
   ...rest
 }) => {
-  return /* @__PURE__ */ jsx53(StyledButton2, { type, $isActive: isActive, "aria-current": isActive ? "page" : void 0, ...rest, children });
+  return /* @__PURE__ */ jsx55(StyledButton2, { type, $isActive: isActive, "aria-current": isActive ? "page" : void 0, ...rest, children });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationContainer.tsx
 import "react";
-import { styled as styled92 } from "styled-components";
-import { jsx as jsx54 } from "react/jsx-runtime";
-var Nav2 = styled92.nav`
+import { styled as styled94 } from "styled-components";
+import { jsx as jsx56 } from "react/jsx-runtime";
+var Nav2 = styled94.nav`
   display: flex;
   justify-content: center;
 `;
-var List = styled92.ul`
+var List = styled94.ul`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1]};
@@ -4257,14 +4484,14 @@ var PaginationContainer = ({
   "aria-label": ariaLabel = "Navigation pagination",
   ...rest
 }) => {
-  return /* @__PURE__ */ jsx54(Nav2, { "aria-label": ariaLabel, ...rest, children: /* @__PURE__ */ jsx54(List, { children }) });
+  return /* @__PURE__ */ jsx56(Nav2, { "aria-label": ariaLabel, ...rest, children: /* @__PURE__ */ jsx56(List, { children }) });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationEllipsis.tsx
 import "react";
-import { styled as styled93 } from "styled-components";
-import { jsx as jsx55 } from "react/jsx-runtime";
-var StyledEllipsis = styled93.span`
+import { styled as styled95 } from "styled-components";
+import { jsx as jsx57 } from "react/jsx-runtime";
+var StyledEllipsis = styled95.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4274,17 +4501,17 @@ var StyledEllipsis = styled93.span`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
 `;
 var PaginationEllipsis = ({ children = "\u2026", ...rest }) => {
-  return /* @__PURE__ */ jsx55(StyledEllipsis, { "aria-hidden": "true", ...rest, children });
+  return /* @__PURE__ */ jsx57(StyledEllipsis, { "aria-hidden": "true", ...rest, children });
 };
 
 // src/ui/components/Navigation/Pagination/PaginationItem.tsx
-import { styled as styled94 } from "styled-components";
-var PaginationItem = styled94.li`
+import { styled as styled96 } from "styled-components";
+var PaginationItem = styled96.li`
   display: inline-flex;
 `;
 
 // src/ui/components/Navigation/Pagination/Pagination.tsx
-import { jsx as jsx56, jsxs as jsxs30 } from "react/jsx-runtime";
+import { jsx as jsx58, jsxs as jsxs32 } from "react/jsx-runtime";
 var range = (start, end) => {
   const length = end - start + 1;
   return Array.from({ length }, (_, idx) => idx + start);
@@ -4318,31 +4545,31 @@ var BasePagination = ({
     return [1, "DOTS", ...range(leftSiblingIndex, rightSiblingIndex), "DOTS", totalPages];
   }, [totalPages, siblingCount, currentPage]);
   if (totalPages <= 1) return null;
-  return /* @__PURE__ */ jsxs30(PaginationContainer, { ...rest, children: [
-    showFirstLast && /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
+  return /* @__PURE__ */ jsxs32(PaginationContainer, { ...rest, children: [
+    showFirstLast && /* @__PURE__ */ jsx58(PaginationItem, { children: /* @__PURE__ */ jsx58(
       PaginationButton,
       {
         disabled: disabled || currentPage === 1,
         onClick: () => onPageChange(1),
         "aria-label": "Premi\xE8re page",
-        children: /* @__PURE__ */ jsx56(Icon16, { name: "chevron-double-left", size: 16 })
+        children: /* @__PURE__ */ jsx58(Icon16, { name: "chevron-double-left", size: 16 })
       }
     ) }),
-    /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
+    /* @__PURE__ */ jsx58(PaginationItem, { children: /* @__PURE__ */ jsx58(
       PaginationButton,
       {
         disabled: disabled || currentPage === 1,
         onClick: () => onPageChange(currentPage - 1),
         "aria-label": "Page pr\xE9c\xE9dente",
-        children: /* @__PURE__ */ jsx56(Icon16, { name: "chevron-left", size: 16 })
+        children: /* @__PURE__ */ jsx58(Icon16, { name: "chevron-left", size: 16 })
       }
     ) }),
     paginationRange.map((pageNumber, idx) => {
       if (pageNumber === "DOTS") {
-        return /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(PaginationEllipsis, {}) }, `dots-${idx}`);
+        return /* @__PURE__ */ jsx58(PaginationItem, { children: /* @__PURE__ */ jsx58(PaginationEllipsis, {}) }, `dots-${idx}`);
       }
       const page = pageNumber;
-      return /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
+      return /* @__PURE__ */ jsx58(PaginationItem, { children: /* @__PURE__ */ jsx58(
         PaginationButton,
         {
           isActive: page === currentPage,
@@ -4353,22 +4580,22 @@ var BasePagination = ({
         }
       ) }, page);
     }),
-    /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
+    /* @__PURE__ */ jsx58(PaginationItem, { children: /* @__PURE__ */ jsx58(
       PaginationButton,
       {
         disabled: disabled || currentPage === totalPages,
         onClick: () => onPageChange(currentPage + 1),
         "aria-label": "Page suivante",
-        children: /* @__PURE__ */ jsx56(Icon16, { name: "chevron-right", size: 16 })
+        children: /* @__PURE__ */ jsx58(Icon16, { name: "chevron-right", size: 16 })
       }
     ) }),
-    showFirstLast && /* @__PURE__ */ jsx56(PaginationItem, { children: /* @__PURE__ */ jsx56(
+    showFirstLast && /* @__PURE__ */ jsx58(PaginationItem, { children: /* @__PURE__ */ jsx58(
       PaginationButton,
       {
         disabled: disabled || currentPage === totalPages,
         onClick: () => onPageChange(totalPages),
         "aria-label": "Derni\xE8re page",
-        children: /* @__PURE__ */ jsx56(Icon16, { name: "chevron-double-right", size: 16 })
+        children: /* @__PURE__ */ jsx58(Icon16, { name: "chevron-double-right", size: 16 })
       }
     ) })
   ] });
@@ -4382,11 +4609,11 @@ var Pagination = Object.assign(BasePagination, {
 
 // src/ui/components/Navigation/Sidebar/Sidebar.tsx
 import { useContext as useContext7 } from "react";
-import { styled as styled95, css as css32 } from "styled-components";
+import { styled as styled97, css as css33 } from "styled-components";
 
 // src/ui/components/Navigation/Sidebar/SidebarContext.tsx
 import { createContext as createContext6, useContext as useContext6, useState as useState9 } from "react";
-import { jsx as jsx57 } from "react/jsx-runtime";
+import { jsx as jsx59 } from "react/jsx-runtime";
 var SidebarContext = createContext6(null);
 var useSidebar = () => {
   const context = useContext6(SidebarContext);
@@ -4413,15 +4640,15 @@ var SidebarProvider = ({
     if (!isControlled) setInternalIsOpen(false);
     onToggle?.(false);
   };
-  return /* @__PURE__ */ jsx57(SidebarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children });
+  return /* @__PURE__ */ jsx59(SidebarContext.Provider, { value: { isOpen, toggle, close, breakpoint }, children });
 };
 
 // src/ui/components/Navigation/Sidebar/Sidebar.tsx
-import { Fragment as Fragment6, jsx as jsx58, jsxs as jsxs31 } from "react/jsx-runtime";
-var Backdrop3 = styled95.div`
+import { Fragment as Fragment6, jsx as jsx60, jsxs as jsxs33 } from "react/jsx-runtime";
+var Backdrop3 = styled97.div`
   display: none;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css32`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css33`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: ${$isOpen ? "block" : "none"};
         position: fixed;
@@ -4433,7 +4660,7 @@ var Backdrop3 = styled95.div`
       }
     `}
 `;
-var StyledSidebar = styled95.aside`
+var StyledSidebar = styled97.aside`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -4448,7 +4675,7 @@ var StyledSidebar = styled95.aside`
   overflow: hidden;
   transition: transform 0.25s ease-in-out;
 
-  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css32`
+  ${({ $breakpoint, $isOpen, theme }) => $breakpoint && css33`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         position: fixed;
         top: 0;
@@ -4470,22 +4697,22 @@ var SidebarInternal = ({
 }) => {
   const { isOpen, close, breakpoint } = useSidebar();
   const activeBreakpoint = overrideBreakpoint ?? breakpoint;
-  return /* @__PURE__ */ jsxs31(Fragment6, { children: [
-    /* @__PURE__ */ jsx58(Backdrop3, { $isOpen: isOpen, $breakpoint: activeBreakpoint, onClick: close }),
-    /* @__PURE__ */ jsx58(StyledSidebar, { $isOpen: isOpen, $width: width, $breakpoint: activeBreakpoint, ...props, children })
+  return /* @__PURE__ */ jsxs33(Fragment6, { children: [
+    /* @__PURE__ */ jsx60(Backdrop3, { $isOpen: isOpen, $breakpoint: activeBreakpoint, onClick: close }),
+    /* @__PURE__ */ jsx60(StyledSidebar, { $isOpen: isOpen, $width: width, $breakpoint: activeBreakpoint, ...props, children })
   ] });
 };
 var Sidebar = ({ breakpoint = "md", isOpen, onToggle, ...props }) => {
   const existingContext = useContext7(SidebarContext);
   if (existingContext) {
-    return /* @__PURE__ */ jsx58(SidebarInternal, { breakpoint, ...props });
+    return /* @__PURE__ */ jsx60(SidebarInternal, { breakpoint, ...props });
   }
-  return /* @__PURE__ */ jsx58(SidebarProvider, { breakpoint, isOpen, onToggle, children: /* @__PURE__ */ jsx58(SidebarInternal, { breakpoint, ...props }) });
+  return /* @__PURE__ */ jsx60(SidebarProvider, { breakpoint, isOpen, onToggle, children: /* @__PURE__ */ jsx60(SidebarInternal, { breakpoint, ...props }) });
 };
 
 // src/ui/components/Navigation/Sidebar/SidebarHeader.tsx
-import { styled as styled96 } from "styled-components";
-var SidebarHeader = styled96.div`
+import { styled as styled98 } from "styled-components";
+var SidebarHeader = styled98.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4497,8 +4724,8 @@ var SidebarHeader = styled96.div`
 `;
 
 // src/ui/components/Navigation/Sidebar/SidebarNav.tsx
-import { styled as styled97 } from "styled-components";
-var SidebarNav = styled97.nav`
+import { styled as styled99 } from "styled-components";
+var SidebarNav = styled99.nav`
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -4518,8 +4745,8 @@ var SidebarNav = styled97.nav`
 `;
 
 // src/ui/components/Navigation/Sidebar/SidebarSection.tsx
-import { styled as styled98 } from "styled-components";
-var SidebarSection = styled98.span`
+import { styled as styled100 } from "styled-components";
+var SidebarSection = styled100.span`
   display: block;
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
   margin-top: ${({ theme }) => theme.spacing[2]};
@@ -4533,8 +4760,8 @@ var SidebarSection = styled98.span`
 `;
 
 // src/ui/components/Navigation/Sidebar/SidebarItem.tsx
-import { styled as styled99 } from "styled-components";
-var SidebarItem = styled99.div`
+import { styled as styled101 } from "styled-components";
+var SidebarItem = styled101.div`
   display: flex;
   width: 100%;
 `;
@@ -4542,9 +4769,9 @@ var SidebarItem = styled99.div`
 // src/ui/components/Navigation/Sidebar/SidebarLink.tsx
 import { useLinkProps as useLinkProps7 } from "core-react";
 import "react";
-import { styled as styled100, css as css33 } from "styled-components";
-import { jsx as jsx59, jsxs as jsxs32 } from "react/jsx-runtime";
-var StyledLink2 = styled100.button`
+import { styled as styled102, css as css34 } from "styled-components";
+import { jsx as jsx61, jsxs as jsxs34 } from "react/jsx-runtime";
+var StyledLink2 = styled102.button`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4564,10 +4791,10 @@ var StyledLink2 = styled100.button`
 
   color: ${({ $active, theme }) => $active ? theme.colors.primary.base : theme.colors.text.body};
 
-  ${({ $active, theme }) => $active ? css33`
+  ${({ $active, theme }) => $active ? css34`
           background-color: ${theme.colors.primary.subtle};
           font-weight: ${theme.typography.weights.semibold};
-        ` : css33`
+        ` : css34`
           &:hover:not(:disabled) {
             background-color: ${theme.colors.background.surfaceHover};
             color: ${theme.colors.text.heading};
@@ -4579,12 +4806,12 @@ var StyledLink2 = styled100.button`
     cursor: not-allowed;
   }
 `;
-var ContentSlot = styled100.span`
+var ContentSlot = styled102.span`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
 `;
-var BadgeSlot = styled100.span`
+var BadgeSlot = styled102.span`
   display: inline-flex;
   align-items: center;
 `;
@@ -4604,18 +4831,18 @@ var SidebarLink = ({
     onClick?.(e);
     if (breakpoint) close();
   };
-  return /* @__PURE__ */ jsxs32(StyledLink2, { ...linkProps, $active: active, onClick: handleClick, ...props, children: [
-    /* @__PURE__ */ jsxs32(ContentSlot, { children: [
+  return /* @__PURE__ */ jsxs34(StyledLink2, { ...linkProps, $active: active, onClick: handleClick, ...props, children: [
+    /* @__PURE__ */ jsxs34(ContentSlot, { children: [
       icon,
       children
     ] }),
-    badge && /* @__PURE__ */ jsx59(BadgeSlot, { children: badge })
+    badge && /* @__PURE__ */ jsx61(BadgeSlot, { children: badge })
   ] });
 };
 
 // src/ui/components/Navigation/Sidebar/SidebarFooter.tsx
-import { styled as styled101 } from "styled-components";
-var SidebarFooter = styled101.div`
+import { styled as styled103 } from "styled-components";
+var SidebarFooter = styled103.div`
   display: flex;
   flex-direction: column;
   padding: ${({ theme }) => theme.spacing[3]};
@@ -4628,9 +4855,9 @@ var SidebarFooter = styled101.div`
 // src/ui/components/Navigation/Sidebar/SidebarToggle.tsx
 import { Icon as Icon17 } from "core-react/icons";
 import "react";
-import { styled as styled102, css as css34 } from "styled-components";
-import { jsx as jsx60 } from "react/jsx-runtime";
-var ToggleButton2 = styled102.button`
+import { styled as styled104, css as css35 } from "styled-components";
+import { jsx as jsx62 } from "react/jsx-runtime";
+var ToggleButton2 = styled104.button`
   display: none;
   align-items: center;
   justify-content: center;
@@ -4647,7 +4874,7 @@ var ToggleButton2 = styled102.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $breakpoint, theme }) => $breakpoint && css34`
+  ${({ $breakpoint, theme }) => $breakpoint && css35`
       @media (max-width: ${theme.breakpoints[$breakpoint]}) {
         display: inline-flex;
       }
@@ -4655,7 +4882,7 @@ var ToggleButton2 = styled102.button`
 `;
 var SidebarToggle = ({ children, ...props }) => {
   const { isOpen, toggle, breakpoint } = useSidebar();
-  return /* @__PURE__ */ jsx60(
+  return /* @__PURE__ */ jsx62(
     ToggleButton2,
     {
       type: "button",
@@ -4664,13 +4891,13 @@ var SidebarToggle = ({ children, ...props }) => {
       "aria-expanded": isOpen,
       "aria-label": "Basculer la barre lat\xE9rale",
       ...props,
-      children: children ?? /* @__PURE__ */ jsx60(Icon17, { name: isOpen ? "close" : "menu", size: 25 })
+      children: children ?? /* @__PURE__ */ jsx62(Icon17, { name: isOpen ? "close" : "menu", size: 25 })
     }
   );
 };
 
 // src/ui/components/Navigation/Tabs/TabContent.tsx
-import { styled as styled103 } from "styled-components";
+import { styled as styled105 } from "styled-components";
 
 // src/ui/components/Navigation/Tabs/TabsContext.tsx
 import { createContext as createContext7, useContext as useContext8 } from "react";
@@ -4684,19 +4911,19 @@ var useTabs = () => {
 };
 
 // src/ui/components/Navigation/Tabs/TabContent.tsx
-import { jsx as jsx61 } from "react/jsx-runtime";
-var ContentWrapper3 = styled103.div`
+import { jsx as jsx63 } from "react/jsx-runtime";
+var ContentWrapper3 = styled105.div`
   padding-top: ${({ theme }) => theme.spacing[4]};
 `;
 var TabContent = ({ value, children, ...rest }) => {
   const { activeTab } = useTabs();
   if (activeTab !== value) return null;
-  return /* @__PURE__ */ jsx61(ContentWrapper3, { role: "tabpanel", ...rest, children });
+  return /* @__PURE__ */ jsx63(ContentWrapper3, { role: "tabpanel", ...rest, children });
 };
 
 // src/ui/components/Navigation/Tabs/TabList.tsx
-import { styled as styled104 } from "styled-components";
-var TabList = styled104.div.attrs({
+import { styled as styled106 } from "styled-components";
+var TabList = styled106.div.attrs({
   role: "tablist"
 })`
   display: flex;
@@ -4719,9 +4946,9 @@ var TabList = styled104.div.attrs({
 
 // src/ui/components/Navigation/Tabs/Tabs.tsx
 import { useState as useState10 } from "react";
-import { styled as styled105 } from "styled-components";
-import { jsx as jsx62 } from "react/jsx-runtime";
-var TabsRoot = styled105.div`
+import { styled as styled107 } from "styled-components";
+import { jsx as jsx64 } from "react/jsx-runtime";
+var TabsRoot = styled107.div`
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -4737,13 +4964,13 @@ var Tabs = ({ defaultValue = "", value, onValueChange, children, ...rest }) => {
     }
     onValueChange?.(nextValue);
   };
-  return /* @__PURE__ */ jsx62(TabsContext.Provider, { value: { activeTab, setActiveTab }, children: /* @__PURE__ */ jsx62(TabsRoot, { ...rest, children }) });
+  return /* @__PURE__ */ jsx64(TabsContext.Provider, { value: { activeTab, setActiveTab }, children: /* @__PURE__ */ jsx64(TabsRoot, { ...rest, children }) });
 };
 
 // src/ui/components/Navigation/Tabs/TabTrigger.tsx
-import { styled as styled106, css as css35 } from "styled-components";
-import { jsx as jsx63 } from "react/jsx-runtime";
-var TriggerButton2 = styled106.button`
+import { styled as styled108, css as css36 } from "styled-components";
+import { jsx as jsx65 } from "react/jsx-runtime";
+var TriggerButton2 = styled108.button`
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -4764,7 +4991,7 @@ var TriggerButton2 = styled106.button`
     color: ${({ theme }) => theme.colors.text.heading};
   }
 
-  ${({ $active, theme }) => $active && css35`
+  ${({ $active, theme }) => $active && css36`
       &::after {
         content: '';
         position: absolute;
@@ -4780,7 +5007,7 @@ var TriggerButton2 = styled106.button`
 var TabTrigger = ({ value, disabled = false, children, ...rest }) => {
   const { activeTab, setActiveTab } = useTabs();
   const isActive = activeTab === value;
-  return /* @__PURE__ */ jsx63(
+  return /* @__PURE__ */ jsx65(
     TriggerButton2,
     {
       type: "button",
@@ -4798,7 +5025,7 @@ var TabTrigger = ({ value, disabled = false, children, ...rest }) => {
 // src/ui/components/Navigation/ThemeModeSwitcher.tsx
 import { useTheme as useTheme3 } from "core-react/theme";
 import "react";
-import { jsx as jsx64 } from "react/jsx-runtime";
+import { jsx as jsx66 } from "react/jsx-runtime";
 var ICON_ONLY_OPTIONS = [
   { value: "system", icon: "laptop", title: "Syst\xE8me (suit le r\xE9glage de votre appareil)" },
   { value: "light", icon: "white-balance-sunny", title: "Th\xE8me clair" },
@@ -4806,7 +5033,7 @@ var ICON_ONLY_OPTIONS = [
 ];
 var ThemeModeSwitcher = ({ ...props }) => {
   const { preference, setPreference } = useTheme3();
-  return /* @__PURE__ */ jsx64(
+  return /* @__PURE__ */ jsx66(
     SegmentedControl,
     {
       "aria-label": "Mode d'affichage",
@@ -4819,7 +5046,7 @@ var ThemeModeSwitcher = ({ ...props }) => {
 };
 
 // src/ui/components/Typo/Display.tsx
-import { styled as styled107 } from "styled-components";
+import { styled as styled109 } from "styled-components";
 var displaySizes = {
   1: "5rem",
   2: "4.5rem",
@@ -4828,7 +5055,7 @@ var displaySizes = {
   5: "3rem",
   6: "2.5rem"
 };
-var Display = styled107.h1.attrs((props) => ({
+var Display = styled109.h1.attrs((props) => ({
   as: props.as || "h1"
 }))`
   font-family: ${({ theme }) => theme.typography.fonts.sans};
@@ -4865,8 +5092,8 @@ var Display = styled107.h1.attrs((props) => ({
 `;
 
 // src/ui/components/Typo/Lead.tsx
-import { styled as styled108 } from "styled-components";
-var Lead = styled108.p.attrs((props) => ({
+import { styled as styled110 } from "styled-components";
+var Lead = styled110.p.attrs((props) => ({
   as: props.as || "p"
 }))`
   font-size: 1.25rem;
@@ -4901,7 +5128,7 @@ var Lead = styled108.p.attrs((props) => ({
 `;
 
 // src/ui/components/Typo/Text.tsx
-import { styled as styled109, css as css36 } from "styled-components";
+import { styled as styled111, css as css37 } from "styled-components";
 var weightMap = {
   light: 300,
   normal: 400,
@@ -4909,7 +5136,7 @@ var weightMap = {
   semibold: 600,
   bold: 700
 };
-var Text = styled109.span.attrs((props) => ({
+var Text = styled111.span.attrs((props) => ({
   as: props.as || "span"
 }))`
   text-align: ${({ $align }) => $align || "inherit"};
@@ -4923,7 +5150,7 @@ var Text = styled109.span.attrs((props) => ({
   return $size;
 }};
 
-  ${({ as, theme }) => as === "pre" && css36`
+  ${({ as, theme }) => as === "pre" && css37`
       font-family: ${theme.typography.fonts.mono};
       margin: 0;
     `}
@@ -4954,7 +5181,7 @@ var Text = styled109.span.attrs((props) => ({
 `;
 
 // src/ui/components/Typo/Title.tsx
-import { styled as styled110 } from "styled-components";
+import { styled as styled112 } from "styled-components";
 var titleSizes = {
   h1: "2.25rem",
   h2: "1.875rem",
@@ -4963,7 +5190,7 @@ var titleSizes = {
   h5: "1.125rem",
   h6: "1rem"
 };
-var Title3 = styled110.h1.attrs((props) => ({
+var Title3 = styled112.h1.attrs((props) => ({
   as: props.as || "h3"
 }))`
   font-family: ${({ theme }) => theme.typography.fonts.sans};
@@ -5192,6 +5419,8 @@ export {
   SkeletonGroup,
   SkeletonLine,
   SkeletonText,
+  Slider,
+  SliderField,
   StatCard,
   TRow,
   TabContent,
@@ -5222,6 +5451,8 @@ export {
   iconNames,
   parseMarkdown,
   renderMarkdownTokens,
+  sliderMidpoint,
+  sliderPercent,
   useAccordion,
   useAccordionItem,
   useDropdown,
