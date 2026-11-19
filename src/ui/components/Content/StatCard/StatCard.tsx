@@ -49,7 +49,7 @@ const BottomRow = styled.div`
 `;
 
 const ValueNumber = styled.strong`
-  font-size: ${({ theme }) => theme.typography.sizes['2xl']};
+  font-size: ${({ theme }) => theme.typography.sizes['lg']};
   font-weight: ${({ theme }) => theme.typography.weights.bold};
   color: ${({ theme }) => theme.colors.text.heading};
   line-height: 1.1;
@@ -59,7 +59,7 @@ const ValueNumber = styled.strong`
 export const StatCard = ({ label, value, icon, trend, trendVariant = 'success', ...rest }: StatCardProps) => {
   return (
     <Card $bordered $elevation="sm" {...rest}>
-      <Card.Body>
+      <Card.Body style={{ padding: '0.75rem' }}>
         <TopRow>
           <LabelText>{label}</LabelText>
           <IconBox>
@@ -69,7 +69,7 @@ export const StatCard = ({ label, value, icon, trend, trendVariant = 'success', 
         <BottomRow>
           <ValueNumber>{value}</ValueNumber>
           {trend && (
-            <Badge $variant={trendVariant} $pill>
+            <Badge $variant={trendVariant} $pill style={{ fontSize: '0.67rem' }}>
               {trend}
             </Badge>
           )}
