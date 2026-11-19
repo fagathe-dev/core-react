@@ -1,10 +1,10 @@
 // frontend/src/ui/components/Content/StatCard/StatCard.tsx
+import { styled } from 'styled-components';
+import { Icon } from '../../../../icons';
+import type { BaseComponentProps } from '../../../types';
 import type { BadgeVariant } from '../../Base/Badge';
 import { Badge } from '../../Base/Badge';
-import { Icon } from 'core-react/icons';
 import { Card } from '../Card';
-import type { BaseComponentProps } from '../../../types';
-import { styled } from 'styled-components';
 
 export interface StatCardProps extends BaseComponentProps {
   label: string;
@@ -18,6 +18,7 @@ const TopRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing[2]};
   margin-bottom: ${({ theme }) => theme.spacing[2]};
 `;
 
@@ -31,6 +32,7 @@ const IconBox = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 36px;
   height: 36px;
   border-radius: ${({ theme }) => theme.radii.base};
@@ -40,7 +42,8 @@ const IconBox = styled.div`
 
 const BottomRow = styled.div`
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing[2]};
 `;
@@ -50,6 +53,7 @@ const ValueNumber = styled.strong`
   font-weight: ${({ theme }) => theme.typography.weights.bold};
   color: ${({ theme }) => theme.colors.text.heading};
   line-height: 1.1;
+  white-space: nowrap;
 `;
 
 export const StatCard = ({ label, value, icon, trend, trendVariant = 'success', ...rest }: StatCardProps) => {
