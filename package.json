@@ -50,6 +50,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"stories/**/*.tsx\" \".storybook/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"stories/**/*.tsx\" \".storybook/**/*.{ts,tsx}\"",
     "prepare": "husky",
